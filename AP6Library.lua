@@ -1,7 +1,9 @@
--- AP6Library.lua - Windows CMD Edition (Lag-Free, Clean, Epic)
--- Sube esto a: https://raw.githubusercontent.com/Ap6ykx3/AP6Library/main/AP6Library.lua
+-- AP6 NEURONET v3.0 - ULTIMATE HACKER OS LIBRARY
+-- Sube esto exactamente a: https://raw.githubusercontent.com/Ap6ykx3/AP6Library/main/AP6Library.lua
+-- Esto es lo más cercano a un "juego" hacker que puedes tener en Roblox sin lag.
 
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -9,296 +11,382 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 
 local AP6 = {
     PlayerGui = PlayerGui,
-    Theme = {
-        Bg = Color3.fromRGB(0, 0, 0),
-        Text = Color3.fromRGB(0, 255, 80),
-        Prompt = Color3.fromRGB(0, 255, 80),
-        Error = Color3.fromRGB(255, 80, 80),
-        Accent = Color3.fromRGB(0, 255, 160)
-    },
-    SupportedGames = {}
+    SupportedGames = {},
+    NeonGreen = Color3.fromRGB(0, 255, 120),
+    Cyan = Color3.fromRGB(0, 255, 255),
+    DarkBg = Color3.fromRGB(5, 5, 8),
+    Sounds = {
+        Type = "rbxassetid://131057808",
+        Scan = "rbxassetid://6518811702",
+        Boot = "rbxassetid://138090596",
+        Inject = "rbxassetid://6895079853"
+    }
 }
 
-function AP6:PlaySound(id)
-    local s = Instance.new("Sound", workspace)
-    s.SoundId = id
-    s.Volume = 0.4
-    s:Play()
-    game.Debris:AddItem(s, 2)
-end
-
--- Simple typing effect
-function AP6:Type(label, text, speed, callback)
-    label.Text = ""
-    local i = 1
-    local conn
-    conn = game:GetService("RunService").Heartbeat:Connect(function()
-        if i > #text then conn:Disconnect() if callback then callback() end return end
-        label.Text = text:sub(1,i)
-        i += 1
-    end)
-end
-
--- Boot sequence (fake Windows CMD boot)
-function AP6:Boot(callback)
-    local gui = Instance.new("ScreenGui", AP6.PlayerGui)
-    gui.Name = "AP6Boot"
+-- ====================== MATRIX RAIN (OPTIMIZADO, SIN LAG) ======================
+function AP6:MatrixRain()
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "NEURONET_RAIN"
     gui.IgnoreGuiInset = true
+    gui.Parent = AP6.PlayerGui
 
     local frame = Instance.new("Frame", gui)
     frame.Size = UDim2.new(1,0,1,0)
-    frame.BackgroundColor3 = AP6.Theme.Bg
+    frame.BackgroundTransparency = 0.95
+    frame.BackgroundColor3 = Color3.new(0,0,0)
 
-    local log = Instance.new("TextLabel", frame)
-    log.Size = UDim2.new(0.9,0,0.8,0)
-    log.Position = UDim2.new(0.05,0,0.1,0)
-    log.BackgroundTransparency = 1
-    log.TextColor3 = AP6.Theme.Text
-    log.Font = Enum.Font.Code
-    log.TextSize = 18
-    log.TextXAlignment = Enum.TextXAlignment.Left
-    log.TextYAlignment = Enum.TextYAlignment.Top
-    log.TextWrapped = true
+    local columns = {}
+    local charSize = 16
+    local cols = math.floor(workspace.CurrentCamera.ViewportSize.X / charSize) + 5
 
-    local lines = {
-        "Microsoft Windows [Version 10.0.19045.4412]",
-        "(c) Microsoft Corporation. All rights reserved.",
-        "",
-        "C:\\AP6\\TERMINATOR> systemcheck",
-        "AP6 TERMINATOR v2.1 - ONLINE",
-        "Key verified: Ap6S",
-        "Scanning universes...",
-        "4 targets detected",
-        "Ready."
-    }
-
-    local fullText = ""
-    for _, line in ipairs(lines) do
-        AP6:Type(log, fullText .. line .. "\n", 0.015, function() fullText = fullText .. line .. "\n" end)
-        task.wait(0.4)
+    for i = 1, cols do
+        table.insert(columns, {
+            x = i * charSize,
+            y = math.random(-500, 0),
+            speed = math.random(6, 14),
+            chars = {}
+        })
     end
 
-    task.wait(1.5)
+    local katakana = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+    local conn
+    conn = RunService.Heartbeat:Connect(function()
+        if not frame.Parent then conn:Disconnect() return end
+        for _, col in ipairs(columns) do
+            col.y += col.speed
+            if col.y > frame.AbsoluteSize.Y + 200 then
+                col.y = math.random(-600, -100)
+                col.speed = math.random(6, 14)
+            end
+
+            -- Nuevo carácter
+            if #col.chars == 0 or col.chars[#col.chars].AbsolutePosition.Y > charSize then
+                local lbl = Instance.new("TextLabel")
+                lbl.Size = UDim2.new(0, charSize, 0, charSize)
+                lbl.Position = UDim2.new(0, col.x, 0, col.y)
+                lbl.BackgroundTransparency = 1
+                lbl.TextColor3 = AP6.NeonGreen
+                lbl.Text = katakana:sub(math.random(1, #katakana), math.random(1, #katakana))
+                lbl.Font = Enum.Font.Code
+                lbl.TextSize = charSize - 2
+                lbl.TextTransparency = 0.3
+                lbl.Parent = frame
+                table.insert(col.chars, lbl)
+            end
+
+            -- Fade trail
+            for i, lbl in ipairs(col.chars) do
+                lbl.Position = UDim2.new(0, col.x, 0, col.y - (i-1)*charSize)
+                lbl.TextTransparency = 0.1 + (i-1)*0.07
+            end
+
+            if #col.chars > 35 then
+                col.chars[1]:Destroy()
+                table.remove(col.chars, 1)
+            end
+        end
+    end)
+end
+
+-- ====================== BOOT SEQUENCE CON MÓDULOS ======================
+function AP6:BootSequence(callback)
+    local gui = Instance.new("ScreenGui", AP6.PlayerGui)
+    gui.Name = "NEURONET_BOOT"
+    gui.IgnoreGuiInset = true
+
+    local bg = Instance.new("Frame", gui)
+    bg.Size = UDim2.new(1,0,1,0)
+    bg.BackgroundColor3 = AP6.DarkBg
+
+    local logo = Instance.new("TextLabel", bg)
+    logo.Size = UDim2.new(0, 600, 0, 120)
+    logo.Position = UDim2.new(0.5, -300, 0.25, 0)
+    logo.BackgroundTransparency = 1
+    logo.Text = "AP6 NEURONET"
+    logo.TextColor3 = AP6.Cyan
+    logo.Font = Enum.Font.Code
+    logo.TextSize = 62
+    logo.TextStrokeTransparency = 0.6
+
+    local subtitle = Instance.new("TextLabel", bg)
+    subtitle.Size = UDim2.new(0, 600, 0, 40)
+    subtitle.Position = UDim2.new(0.5, -300, 0.38, 0)
+    subtitle.BackgroundTransparency = 1
+    subtitle.Text = "TERMINATOR v3.0 - SHADOW PROTOCOL"
+    subtitle.TextColor3 = AP6.NeonGreen
+    subtitle.Font = Enum.Font.Code
+    subtitle.TextSize = 24
+
+    local console = Instance.new("TextLabel", bg)
+    console.Size = UDim2.new(0.7, 0, 0.4, 0)
+    console.Position = UDim2.new(0.15, 0, 0.55, 0)
+    console.BackgroundTransparency = 1
+    console.TextColor3 = AP6.NeonGreen
+    console.Font = Enum.Font.Code
+    console.TextSize = 19
+    console.TextXAlignment = Enum.TextXAlignment.Left
+    console.TextYAlignment = Enum.TextYAlignment.Top
+
+    AP6:PlaySound(AP6.Sounds.Boot)
+
+    local modules = {
+        "[CORE] Initializing ShadowNet connection...",
+        "[NET] Establishing encrypted tunnel to 0xDEADBEEF...",
+        "[PAYLOAD] Loading exploit database...",
+        "[VISUAL] Activating overlay engine...",
+        "[ANTI] Bypassing Byfron detection layer...",
+        "[READY] NEURONET ONLINE - All modules loaded."
+    }
+
+    local text = ""
+    for _, line in ipairs(modules) do
+        AP6:TypeText(console, text .. line .. "\n", 0.02)
+        text = text .. line .. "\n"
+        task.wait(0.55)
+    end
+
+    task.wait(1.8)
+    TweenService:Create(bg, TweenInfo.new(0.9), {BackgroundTransparency = 1}):Play()
+    task.wait(1)
     gui:Destroy()
     callback()
 end
 
--- Main Terminal Window
-function AP6:OpenTerminal()
+function AP6:TypeText(label, fullText, speed)
+    label.Text = ""
+    local i = 1
+    local conn
+    conn = RunService.Heartbeat:Connect(function()
+        if i > #fullText then conn:Disconnect() return end
+        label.Text = fullText:sub(1, i)
+        i += 1
+        if math.random(1,4) == 1 then AP6:PlaySound(AP6.Sounds.Type) end
+    end)
+end
+
+-- ====================== MAIN INTERFACE ======================
+function AP6:CreateInterface()
     local gui = Instance.new("ScreenGui", AP6.PlayerGui)
-    gui.Name = "AP6CMD"
+    gui.Name = "NEURONET"
     gui.IgnoreGuiInset = true
     gui.ResetOnSpawn = false
 
     local main = Instance.new("Frame", gui)
-    main.Size = UDim2.new(0, 780, 0, 520)
-    main.Position = UDim2.new(0.5, -390, 0.5, -260)
-    main.BackgroundColor3 = AP6.Theme.Bg
-    main.BorderSizePixel = 0
-    Instance.new("UICorner", main).CornerRadius = UDim.new(0, 4)
+    main.Size = UDim2.new(0, 980, 0, 620)
+    main.Position = UDim2.new(0.5, -490, 0.5, -310)
+    main.BackgroundColor3 = AP6.DarkBg
+    Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
     local stroke = Instance.new("UIStroke", main)
-    stroke.Color = AP6.Theme.Accent
-    stroke.Thickness = 2
+    stroke.Color = AP6.Cyan
+    stroke.Thickness = 3
 
-    -- Title bar (Windows style)
-    local titleBar = Instance.new("Frame", main)
-    titleBar.Size = UDim2.new(1,0,0,32)
-    titleBar.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0,4)
+    -- Header
+    local header = Instance.new("Frame", main)
+    header.Size = UDim2.new(1,0,0,50)
+    header.BackgroundColor3 = Color3.fromRGB(10,10,15)
+    Instance.new("UICorner", header).CornerRadius = UDim.new(0,12)
 
-    local title = Instance.new("TextLabel", titleBar)
-    title.Size = UDim2.new(1, -120, 1, 0)
-    title.Position = UDim2.new(0, 12, 0, 0)
+    local title = Instance.new("TextLabel", header)
+    title.Size = UDim2.new(0.6,0,1,0)
+    title.Position = UDim2.new(0,30,0,0)
     title.BackgroundTransparency = 1
-    title.Text = "Command Prompt - AP6 TERMINATOR"
-    title.TextColor3 = Color3.fromRGB(200,200,200)
+    title.Text = "AP6 NEURONET  •  TERMINATOR v3.0"
+    title.TextColor3 = AP6.Cyan
     title.Font = Enum.Font.Code
-    title.TextSize = 16
+    title.TextSize = 26
     title.TextXAlignment = Enum.TextXAlignment.Left
 
-    local close = Instance.new("TextButton", titleBar)
-    close.Size = UDim2.new(0, 30, 0, 30)
-    close.Position = UDim2.new(1, -38, 0, 1)
-    close.BackgroundTransparency = 1
-    close.Text = "×"
-    close.TextColor3 = Color3.fromRGB(255,100,100)
-    close.Font = Enum.Font.GothamBold
-    close.TextSize = 22
-    close.MouseButton1Click:Connect(function() gui:Destroy() end)
+    local status = Instance.new("TextLabel", header)
+    status.Size = UDim2.new(0.3,0,1,0)
+    status.Position = UDim2.new(0.7,0,0,0)
+    status.BackgroundTransparency = 1
+    status.Text = "CONNECTED • KEY: VALID • BYFRON: BYPASSED"
+    status.TextColor3 = AP6.NeonGreen
+    status.Font = Enum.Font.Code
+    status.TextSize = 18
 
-    -- Content area
-    local content = Instance.new("ScrollingFrame", main)
-    content.Size = UDim2.new(1, -20, 1, -80)
-    content.Position = UDim2.new(0, 10, 0, 40)
-    content.BackgroundTransparency = 1
-    content.ScrollBarThickness = 4
-    content.ScrollBarImageColor3 = AP6.Theme.Text
-    content.CanvasSize = UDim2.new(0,0,0,0)
+    -- Sidebar Modules
+    local sidebar = Instance.new("Frame", main)
+    sidebar.Size = UDim2.new(0, 220, 1, -50)
+    sidebar.Position = UDim2.new(0, 0, 0, 50)
+    sidebar.BackgroundColor3 = Color3.fromRGB(8,8,12)
 
-    local layout = Instance.new("UIListLayout", content)
-    layout.Padding = UDim.new(0, 2)
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    local modTitle = Instance.new("TextLabel", sidebar)
+    modTitle.Size = UDim2.new(1,0,0,40)
+    modTitle.BackgroundTransparency = 1
+    modTitle.Text = "LOADED MODULES"
+    modTitle.TextColor3 = AP6.NeonGreen
+    modTitle.Font = Enum.Font.Code
+    modTitle.TextSize = 20
 
-    local function addLine(text, color)
-        local lbl = Instance.new("TextLabel")
-        lbl.Size = UDim2.new(1,0,0,22)
-        lbl.BackgroundTransparency = 1
-        lbl.Text = text
-        lbl.TextColor3 = color or AP6.Theme.Text
-        lbl.Font = Enum.Font.Code
-        lbl.TextSize = 18
-        lbl.TextXAlignment = Enum.TextXAlignment.Left
-        lbl.Parent = content
-        content.CanvasSize = UDim2.new(0,0,0, layout.AbsoluteContentSize.Y + 40)
-        content.CanvasPosition = Vector2.new(0, content.CanvasSize.Y.Offset)
+    local mods = {"ShadowNet", "Payload DB", "ESP Engine", "Aimbot Core", "Anti-Detection"}
+    for i, m in ipairs(mods) do
+        local btn = Instance.new("TextButton", sidebar)
+        btn.Size = UDim2.new(1,-20,0,45)
+        btn.Position = UDim2.new(0,10,0,50 + (i-1)*55)
+        btn.BackgroundColor3 = Color3.fromRGB(15,15,20)
+        btn.Text = "▶ " .. m
+        btn.TextColor3 = AP6.NeonGreen
+        btn.Font = Enum.Font.Code
+        btn.TextSize = 18
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
     end
 
-    -- Input line
-    local inputFrame = Instance.new("Frame", main)
-    inputFrame.Size = UDim2.new(1, -20, 0, 36)
-    inputFrame.Position = UDim2.new(0, 10, 1, -48)
-    inputFrame.BackgroundColor3 = AP6.Theme.Bg
+    -- Targets
+    local targetsFrame = Instance.new("ScrollingFrame", main)
+    targetsFrame.Size = UDim2.new(0.65,0,1,-120)
+    targetsFrame.Position = UDim2.new(0.24,0,0,60)
+    targetsFrame.BackgroundTransparency = 1
+    targetsFrame.ScrollBarThickness = 6
+    targetsFrame.ScrollBarImageColor3 = AP6.Cyan
 
-    local prompt = Instance.new("TextLabel", inputFrame)
-    prompt.Size = UDim2.new(0, 160, 1, 0)
-    prompt.BackgroundTransparency = 1
-    prompt.Text = "C:\\AP6\\TERMINATOR> "
-    prompt.TextColor3 = AP6.Theme.Prompt
-    prompt.Font = Enum.Font.Code
-    prompt.TextSize = 18
-    prompt.TextXAlignment = Enum.TextXAlignment.Left
+    local layout = Instance.new("UIListLayout", targetsFrame)
+    layout.Padding = UDim.new(0,16)
 
-    local input = Instance.new("TextBox", inputFrame)
-    input.Size = UDim2.new(1, -170, 1, 0)
-    input.Position = UDim2.new(0, 165, 0, 0)
-    input.BackgroundTransparency = 1
-    input.Text = ""
-    input.TextColor3 = AP6.Theme.Text
-    input.Font = Enum.Font.Code
-    input.TextSize = 18
-    input.TextXAlignment = Enum.TextXAlignment.Left
-    input.ClearTextOnFocus = false
+    for placeId, info in pairs(AP6.SupportedGames) do
+        local card = Instance.new("Frame", targetsFrame)
+        card.Size = UDim2.new(1,0,0,90)
+        card.BackgroundColor3 = Color3.fromRGB(12,12,18)
+        Instance.new("UICorner", card).CornerRadius = UDim.new(0,12)
 
-    -- Blinking cursor
-    local cursor = Instance.new("TextLabel", inputFrame)
-    cursor.Size = UDim2.new(0, 10, 1, 0)
-    cursor.Position = UDim2.new(0, 165, 0, 0)
-    cursor.BackgroundTransparency = 1
-    cursor.Text = "_"
-    cursor.TextColor3 = AP6.Theme.Text
-    cursor.Font = Enum.Font.Code
-    cursor.TextSize = 18
-    cursor.TextXAlignment = Enum.TextXAlignment.Left
-    TweenService:Create(cursor, TweenInfo.new(0.5, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {TextTransparency = 1}):Play()
+        local icon = Instance.new("TextLabel", card)
+        icon.Size = UDim2.new(0,60,1,0)
+        icon.Text = "▶"
+        icon.TextColor3 = AP6.Cyan
+        icon.Font = Enum.Font.Code
+        icon.TextSize = 50
+        icon.BackgroundTransparency = 1
 
-    -- Commands
-    local commands = {
-        help = function()
-            addLine("Available commands:", AP6.Theme.Accent)
-            addLine("  list          - Show supported games")
-            addLine("  inject <name> - Inject into game")
-            addLine("  status        - System status")
-            addLine("  clear         - Clear screen")
-            addLine("  theme <color> - Change color (green/cyan)")
-            addLine("  exit          - Close terminal")
-        end,
-        list = function()
-            addLine("Detected targets:", AP6.Theme.Accent)
-            for id, info in pairs(AP6.SupportedGames) do
-                addLine(string.format("  [%s] %s - %s", id, info.name, info.status), AP6.Theme.Text)
-            end
-        end,
-        status = function()
-            addLine("AP6 TERMINATOR v2.1", AP6.Theme.Accent)
-            addLine("Connected: YES", AP6.Theme.Text)
-            addLine("Current place: " .. game.PlaceId, AP6.Theme.Text)
-            addLine("Key: VALID", AP6.Theme.Text)
-        end,
-        clear = function()
-            for _, child in ipairs(content:GetChildren()) do
-                if child:IsA("TextLabel") then child:Destroy() end
-            end
-        end,
-        inject = function(args)
-            local name = table.concat(args, " "):lower()
-            local target = nil
-            for _, info in pairs(AP6.SupportedGames) do
-                if info.name:lower():find(name) then target = info break end
-            end
-            if target and game.PlaceId == (target.id or 0) then
-                addLine("Injecting into " .. target.name .. "...", AP6.Theme.Accent)
-                local bar = Instance.new("Frame", content)
-                bar.Size = UDim2.new(0.6,0,0,18)
-                bar.BackgroundColor3 = AP6.Theme.Accent
-                Instance.new("UICorner", bar)
-                TweenService:Create(bar, TweenInfo.new(2.5, Enum.EasingStyle.Linear), {Size = UDim2.new(0.6,0,0,18)}):Play() -- fake progress
-                task.wait(2.8)
-                gui:Destroy()
-                loadstring(game:HttpGet(target.url))()
-            else
-                addLine("ERROR: Target not found or not in game.", AP6.Theme.Error)
-            end
-        end,
-        theme = function(args)
-            local c = args[1] and args[1]:lower()
-            if c == "cyan" then
-                AP6.Theme.Text = Color3.fromRGB(0, 255, 255)
-                AP6.Theme.Prompt = Color3.fromRGB(0, 255, 255)
-                addLine("Theme changed to CYAN", AP6.Theme.Accent)
-            else
-                AP6.Theme.Text = Color3.fromRGB(0, 255, 80)
-                AP6.Theme.Prompt = Color3.fromRGB(0, 255, 80)
-                addLine("Theme changed to GREEN", AP6.Theme.Accent)
-            end
-        end,
-        exit = function() gui:Destroy() end
+        local name = Instance.new("TextLabel", card)
+        name.Size = UDim2.new(1,-90,0,50)
+        name.Position = UDim2.new(0,70,0,10)
+        name.BackgroundTransparency = 1
+        name.Text = info.name
+        name.TextColor3 = AP6.NeonGreen
+        name.Font = Enum.Font.Code
+        name.TextSize = 24
+        name.TextXAlignment = Enum.TextXAlignment.Left
+
+        local breachBtn = Instance.new("TextButton", card)
+        breachBtn.Size = UDim2.new(0,140,0,40)
+        breachBtn.Position = UDim2.new(1,-160,0.5,-20)
+        breachBtn.BackgroundColor3 = AP6.Cyan
+        breachBtn.Text = "BREACH TARGET"
+        breachBtn.TextColor3 = Color3.new(0,0,0)
+        breachBtn.Font = Enum.Font.GothamBold
+        breachBtn.TextSize = 16
+        Instance.new("UICorner", breachBtn).CornerRadius = UDim.new(0,8)
+
+        breachBtn.MouseButton1Click:Connect(function()
+            AP6:PlaySound(AP6.Sounds.Inject)
+            AP6:BreachSequence(info)
+        end)
+    end
+
+    targetsFrame.CanvasSize = UDim2.new(0,0,0, layout.AbsoluteContentSize.Y + 40)
+
+    -- Console log
+    local consoleFrame = Instance.new("Frame", main)
+    consoleFrame.Size = UDim2.new(0.65,0,0,150)
+    consoleFrame.Position = UDim2.new(0.24,0,1,-170)
+    consoleFrame.BackgroundColor3 = Color3.fromRGB(8,8,12)
+    Instance.new("UICorner", consoleFrame).CornerRadius = UDim.new(0,12)
+
+    local consoleLog = Instance.new("TextLabel", consoleFrame)
+    consoleLog.Size = UDim2.new(1,-20,1,-20)
+    consoleLog.Position = UDim2.new(0,10,0,10)
+    consoleLog.BackgroundTransparency = 1
+    consoleLog.Text = "[NEURONET] Ready for injection.\nType 'help' in chat for commands."
+    consoleLog.TextColor3 = AP6.NeonGreen
+    consoleLog.Font = Enum.Font.Code
+    consoleLog.TextSize = 17
+    consoleLog.TextXAlignment = Enum.TextXAlignment.Left
+    consoleLog.TextYAlignment = Enum.TextYAlignment.Top
+
+    AP6:MakeDraggable(main)
+    return gui
+end
+
+function AP6:BreachSequence(info)
+    local breachGui = Instance.new("ScreenGui", AP6.PlayerGui)
+    breachGui.IgnoreGuiInset = true
+
+    local bg = Instance.new("Frame", breachGui)
+    bg.Size = UDim2.new(1,0,1,0)
+    bg.BackgroundColor3 = Color3.new(0,0,0)
+    bg.BackgroundTransparency = 0.4
+
+    local panel = Instance.new("Frame", breachGui)
+    panel.Size = UDim2.new(0, 620, 0, 380)
+    panel.Position = UDim2.new(0.5, -310, 0.5, -190)
+    panel.BackgroundColor3 = AP6.DarkBg
+    Instance.new("UICorner", panel).CornerRadius = UDim.new(0,16)
+
+    local log = Instance.new("TextLabel", panel)
+    log.Size = UDim2.new(1,-40,1,-80)
+    log.Position = UDim2.new(0,20,0,20)
+    log.BackgroundTransparency = 1
+    log.TextColor3 = AP6.NeonGreen
+    log.Font = Enum.Font.Code
+    log.TextSize = 18
+    log.TextXAlignment = Enum.TextXAlignment.Left
+
+    local lines = {
+        "[BREACH] Connecting to target " .. info.name .. "...",
+        "[FIREWALL] Bypassing Roblox anti-cheat...",
+        "[PAYLOAD] Uploading AP6 core...",
+        "[EXPLOIT] Injecting universal script...",
+        "[SUCCESS] Target compromised."
     }
 
-    input.FocusLost:Connect(function(enterPressed)
-        if enterPressed and input.Text ~= "" then
-            local cmdLine = input.Text
-            addLine("C:\\AP6\\TERMINATOR> " .. cmdLine, AP6.Theme.Prompt)
-            local parts = cmdLine:split(" ")
-            local cmd = parts[1]:lower()
-            table.remove(parts, 1)
-            if commands[cmd] then
-                commands[cmd](parts)
-            else
-                addLine("Unknown command. Type 'help'", AP6.Theme.Error)
-            end
-            input.Text = ""
-            input:CaptureFocus()
-        end
-    end)
+    local full = ""
+    for _, l in ipairs(lines) do
+        AP6:TypeText(log, full .. l .. "\n", 0.03)
+        full = full .. l .. "\n"
+        task.wait(0.6)
+    end
 
-    -- Draggable
+    task.wait(2)
+    breachGui:Destroy()
+    loadstring(game:HttpGet(info.url))()
+end
+
+function AP6:MakeDraggable(frame)
+    -- (código draggable estándar, igual que antes)
     local dragging, dragStart, startPos
-    main.InputBegan:Connect(function(input)
+    frame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
-            startPos = main.Position
+            startPos = frame.Position
         end
     end)
     UserInputService.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
-            main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
     end)
-
-    input:CaptureFocus()
-    addLine("Type 'help' for commands", AP6.Theme.Accent)
 end
 
--- Initialize
+function AP6:PlaySound(id)
+    local s = Instance.new("Sound", workspace)
+    s.SoundId = id
+    s.Volume = 0.5
+    s:Play()
+    game.Debris:AddItem(s, 3)
+end
+
+-- ====================== INIT ======================
 function AP6:Init(games)
     AP6.SupportedGames = games
-    AP6:Boot(function()
-        AP6:OpenTerminal()
+    AP6:MatrixRain()
+    AP6:BootSequence(function()
+        AP6:CreateInterface()
     end)
 end
 
