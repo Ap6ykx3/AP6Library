@@ -1,110 +1,175 @@
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
+local SoundService = game:GetService("SoundService")
+local Debris = game:GetService("Debris")
+
 local LocalPlayer = Players.LocalPlayer
 
-local AP6Lib = {}
+local AP6 = {}
 
-
-AP6Lib.Key = "Ap6S"
-AP6Lib.Colors = {
-    Primary = Color3.fromRGB(0, 255, 128),
-    Secondary = Color3.fromRGB(255, 64, 64),
-    Background = Color3.fromRGB(25, 25, 25)
+AP6.Colors = {
+    Background = Color3.fromRGB(24,24,28),
+    Primary = Color3.fromRGB(140,170,255),
+    Secondary = Color3.fromRGB(255,120,150),
+    Accent = Color3.fromRGB(170,255,200),
+    Text = Color3.fromRGB(235,235,240)
 }
 
-
-AP6Lib.Icons = {
-    Ready = "🟢",
-    NotInGame = "🔴",
-    Developing = "🔘"
+AP6.Sounds = {
+    Click = 9118823102,
+    Notify = 9118823102
 }
 
-
-function AP6Lib:FadeIn(guiObject, duration)
-    guiObject.BackgroundTransparency = 1
-    guiObject.Visible = true
-    TweenService:Create(guiObject, TweenInfo.new(duration or 1), {BackgroundTransparency = 0}):Play()
+local function sound(id)
+    local s = Instance.new("Sound")
+    s.SoundId = "rbxassetid://"..id
+    s.Volume = 1
+    s.Parent = SoundService
+    s:Play()
+    Debris:AddItem(s,3)
 end
 
-
-function AP6Lib:FadeOut(guiObject, duration)
-    TweenService:Create(guiObject, TweenInfo.new(duration or 1), {BackgroundTransparency = 1}):Play()
-    task.wait(duration or 1)
-    guiObject.Visible = false
+local function tween(o,p,t,s,d)
+    TweenService:Create(
+        o,
+        TweenInfo.new(t or 0.4, s or Enum.EasingStyle.Quad, d or Enum.EasingDirection.Out),
+        p
+    ):Play()
 end
 
-
-function AP6Lib:Confetti(parent)
-    local particle = Instance.new("ParticleEmitter")
-    particle.Texture = "rbxassetid://241876357"
-    particle.Lifetime = NumberRange.new(2,3)
-    particle.Rate = 50
-    particle.Speed = NumberRange.new(10,20)
-    particle.Parent = parent
-    task.delay(3, function() particle.Enabled = false end)
+function AP6:FadeIn(o,t)
+    o.Visible = true
+    o.BackgroundTransparency = 1
+    tween(o,{BackgroundTransparency = 0},t)
 end
 
-
-function AP6Lib:Notify(title, content, duration)
-    local msg = Instance.new("Hint")
-    msg.Text = "✨ " .. title .. " | " .. content .. " ✨"
-    msg.Parent = workspace
-    task.delay(duration or 3, function() msg:Destroy() end)
-end
-
-
-function AP6Lib:CheckKey(inputKey, successCallback, failCallback)
-    if inputKey == self.Key then
-        successCallback()
-        self:Confetti(LocalPlayer:WaitForChild("PlayerGui"))
-    else
-        failCallback()
-    end
-end
-
-
-function AP6Lib:MakeDraggable(frame)
-    local dragging, dragInput, dragStart, startPos
-    frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = frame.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-    end)
-    frame.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            dragInput = input
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
-                                       startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
+function AP6:FadeOut(o,t)
+    tween(o,{BackgroundTransparency = 1},t)
+    task.delay(t or 0.4,function()
+        o.Visible = false
     end)
 end
 
+function AP6:Notify(title,text,dur)
+    local gui = LocalPlayer:WaitForChild("PlayerGui")
 
-function AP6Lib:BindToggle(guiObject)
-    local visible = true
-    UserInputService.InputBegan:Connect(function(input, processed)
-        if not processed and input.KeyCode == Enum.KeyCode.LeftControl then
-            visible = not visible
-            if visible then
-                self:FadeIn(guiObject, 0.5)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0,340,0,55)
+    frame.Position = UDim2.new(1,-350,1,-85)
+    frame.BackgroundColor3 = self.Colors.Secondary
+    frame.BackgroundTransparency = 1
+    frame.BorderSizePixel = 0
+    frame.Parent = gui
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1,-14,1,-14)
+    lbl.Position = UDim2.new(0,7,0,7)
+    lbl.BackgroundTransparency = 1
+    lbl.TextWrapped = true
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.TextYAlignment = Enum.TextYAlignment.Center
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextSize = 15
+    lbl.TextColor3 = self.Colors.Text
+    lbl.Text = "✦ "..title.."  "..text
+    lbl.Parent = frame
+
+    sound(self.Sounds.Notify)
+    self:FadeIn(frame,0.35)
+
+    task.delay(dur or 3,function()
+        self:FadeOut(frame,0.35)
+        task.wait(0.35)
+        frame:Destroy()
+    end)
+end
+
+function AP6:CreateWindow(title,toggleKey)
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "AP6_UI"
+    gui.ResetOnSpawn = false
+    gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+    local main = Instance.new("Frame")
+    main.Size = UDim2.new(0,460,0,340)
+    main.Position = UDim2.new(0.5,-230,0.5,-170)
+    main.BackgroundColor3 = self.Colors.Background
+    main.BackgroundTransparency = 1
+    main.BorderSizePixel = 0
+    main.Active = true
+    main.Draggable = true
+    main.Visible = false
+    main.Parent = gui
+
+    local top = Instance.new("TextLabel")
+    top.Size = UDim2.new(1,0,0,46)
+    top.BackgroundTransparency = 1
+    top.Font = Enum.Font.GothamBold
+    top.TextSize = 20
+    top.TextColor3 = self.Colors.Text
+    top.Text = "✦ "..title
+    top.Parent = main
+
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1,0,1,-56)
+    container.Position = UDim2.new(0,0,0,56)
+    container.BackgroundTransparency = 1
+    container.Parent = main
+
+    local layout = Instance.new("UIListLayout",container)
+    layout.Padding = UDim.new(0,10)
+
+    self:FadeIn(main,0.6)
+
+    UserInputService.InputBegan:Connect(function(i,gp)
+        if gp then return end
+        if toggleKey and i.KeyCode == toggleKey then
+            if main.Visible then
+                self:FadeOut(main,0.4)
             else
-                self:FadeOut(guiObject, 0.5)
+                self:FadeIn(main,0.4)
             end
         end
     end)
+
+    return container
 end
 
-return AP6Lib
+function AP6:CreateButton(parent,text,callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1,-20,0,38)
+    btn.BackgroundColor3 = self.Colors.Primary
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = false
+    btn.Text = text
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 16
+    btn.TextColor3 = self.Colors.Text
+    btn.Parent = parent
+
+    btn.MouseButton1Click:Connect(function()
+        sound(self.Sounds.Click)
+        tween(btn,{BackgroundColor3 = self.Colors.Accent},0.15)
+        task.wait(0.15)
+        tween(btn,{BackgroundColor3 = self.Colors.Primary},0.15)
+        callback()
+    end)
+
+    return btn
+end
+
+function AP6:CreateLabel(parent,text)
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1,-20,0,28)
+    lbl.BackgroundTransparency = 1
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextSize = 14
+    lbl.TextColor3 = self.Colors.Accent
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Text = text
+    lbl.Parent = parent
+    return lbl
+end
+
+return AP6
