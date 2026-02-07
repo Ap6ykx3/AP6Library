@@ -1,4 +1,3 @@
--- AP6Library.lua (GUARDALO EXACTAMENTE ASÍ EN: https://raw.githubusercontent.com/Ap6ykx3/AP6Library/main/AP6Library.lua)
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
