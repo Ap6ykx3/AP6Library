@@ -4,33 +4,23 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
+local function getExecutor()
+    if identifyexecutor then return identifyexecutor().Name end
+    if getexecutorname then return getexecutorname() end
+    return "Unknown"
+end
+
 local AP6 = {
     PlayerGui = PlayerGui,
     NeonGreen = Color3.fromRGB(0, 255, 130),
     Cyan = Color3.fromRGB(0, 255, 255),
-    Dark = Color3.fromRGB(6, 6, 10),
-    Sounds = {
-        Boot = "rbxassetid://138090596",
-        Type = "rbxassetid://131057808",
-        Click = "rbxassetid://6895079853",
-        Inject = "rbxassetid://6518811702"
-    }
+    Dark = Color3.fromRGB(6, 6, 10)
 }
-
-function AP6:PlaySound(id)
-    local s = Instance.new("Sound", workspace)
-    s.SoundId = id
-    s.Volume = 0.45
-    s:Play()
-    game.Debris:AddItem(s, 3)
-end
-
 
 function AP6:TypeText(label, text, speed)
     label.Text = ""
     for i = 1, #text do
         label.Text = text:sub(1, i)
-        if math.random(1,3) == 1 then AP6:PlaySound(AP6.Sounds.Type) end
         task.wait(speed or 0.025)
     end
 end
@@ -45,35 +35,51 @@ function AP6:BootSequence(callback)
     bg.BackgroundColor3 = AP6.Dark
 
     local logo = Instance.new("TextLabel", bg)
-    logo.Size = UDim2.new(0,700,0,100)
-    logo.Position = UDim2.new(0.5,-350,0.32,0)
+    logo.Size = UDim2.new(0,800,0,120)
+    logo.Position = UDim2.new(0.5,-400,0.28,0)
     logo.BackgroundTransparency = 1
     logo.Text = "AP6 NEURONET"
     logo.TextColor3 = AP6.Cyan
     logo.Font = Enum.Font.Code
-    logo.TextSize = 68
+    logo.TextSize = 80
+    logo.TextStrokeTransparency = 0.4
+    logo.TextStrokeColor3 = Color3.new(0,0,0)
 
     local sub = Instance.new("TextLabel", bg)
-    sub.Size = UDim2.new(0,700,0,40)
-    sub.Position = UDim2.new(0.5,-350,0.45,0)
+    sub.Size = UDim2.new(0,800,0,50)
+    sub.Position = UDim2.new(0.5,-400,0.42,0)
     sub.BackgroundTransparency = 1
     sub.Text = "TERMINATOR v3.2 — SHADOW PROTOCOL"
     sub.TextColor3 = AP6.NeonGreen
     sub.Font = Enum.Font.Code
-    sub.TextSize = 26
+    sub.TextSize = 32
+
+    local progBg = Instance.new("Frame", bg)
+    progBg.Size = UDim2.new(0,600,0,12)
+    progBg.Position = UDim2.new(0.5,-300,0.55,0)
+    progBg.BackgroundColor3 = Color3.fromRGB(20,20,25)
+    Instance.new("UICorner", progBg).CornerRadius = UDim.new(0,6)
+
+    local prog = Instance.new("Frame", progBg)
+    prog.Size = UDim2.new(0,0,1,0)
+    prog.BackgroundColor3 = AP6.Cyan
+    Instance.new("UICorner", prog).CornerRadius = UDim.new(0,6)
+    Instance.new("UIGradient", prog).Color = ColorSequence.new{ColorSequenceKeypoint.new(0, AP6.Cyan), ColorSequenceKeypoint.new(1, AP6.NeonGreen)}
 
     local console = Instance.new("TextLabel", bg)
-    console.Size = UDim2.new(0.65,0,0.35,0)
-    console.Position = UDim2.new(0.175,0,0.58,0)
+    console.Size = UDim2.new(0.7,0,0.3,0)
+    console.Position = UDim2.new(0.15,0,0.65,0)
     console.BackgroundTransparency = 1
     console.TextColor3 = AP6.NeonGreen
     console.Font = Enum.Font.Code
-    console.TextSize = 19
+    console.TextSize = 20
     console.TextXAlignment = Enum.TextXAlignment.Left
+    console.TextYAlignment = Enum.TextYAlignment.Top
 
-    AP6:PlaySound(AP6.Sounds.Boot)
+    TweenService:Create(prog, TweenInfo.new(4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,1,0)}):Play()
 
     local lines = {
+        "[EXEC] Detected: " .. getExecutor(),
         "[NEURONET] Initializing core systems...",
         "[SHADOW] Establishing encrypted tunnel...",
         "[ANTI] Bypassing detection layers...",
@@ -85,20 +91,22 @@ function AP6:BootSequence(callback)
     local full = ""
     for _, line in ipairs(lines) do
         local toType = full .. line .. "\n"
-        AP6:TypeText(console, toType, 0.025)
+        task.spawn(function() AP6:TypeText(console, toType, 0.02) end)
         full = toType
-        task.wait(0.45)
+        task.wait(0.5)
     end
 
+    task.wait(2)
+    TweenService:Create(bg, TweenInfo.new(1, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(logo, TweenInfo.new(1), {TextTransparency = 1}):Play()
+    TweenService:Create(sub, TweenInfo.new(1), {TextTransparency = 1}):Play()
+    TweenService:Create(console, TweenInfo.new(1), {TextTransparency = 1}):Play()
     task.wait(1.2)
-    TweenService:Create(bg, TweenInfo.new(0.8), {BackgroundTransparency = 1}):Play()
-    task.wait(1)
     gui:Destroy()
     callback()
 end
 
 function AP6:Notify(title, text, duration)
-    AP6:PlaySound(AP6.Sounds.Inject)
     local gui = AP6.PlayerGui:FindFirstChild("NEURONET_NOTIFY") or Instance.new("ScreenGui", AP6.PlayerGui)
     gui.Name = "NEURONET_NOTIFY"
     gui.IgnoreGuiInset = true
@@ -181,7 +189,7 @@ function AP6:CreateMainUI(games)
     title.Size = UDim2.new(1,-20,1,0)
     title.Position = UDim2.new(0,25,0,0)
     title.BackgroundTransparency = 1
-    title.Text = "AP6 NEURONET  •  TERMINATOR v3.2"
+    title.Text = "AP6 UNIVERSAL  •  TERMINATOR v3.2"
     title.TextColor3 = AP6.Cyan
     title.Font = Enum.Font.Code
     title.TextSize = 28
@@ -197,52 +205,75 @@ function AP6:CreateMainUI(games)
     local layout = Instance.new("UIListLayout", scroll)
     layout.Padding = UDim.new(0, 18)
 
-    for _, info in pairs(games) do
+    local currentPlace = game.PlaceId
+    for placeId, info in pairs(games) do
+        local isCurrent = (placeId == currentPlace)
         local card = Instance.new("Frame", scroll)
         card.Size = UDim2.new(1,0,0,100)
-        card.BackgroundColor3 = Color3.fromRGB(12,12,18)
+        card.BackgroundColor3 = isCurrent and Color3.fromRGB(15,15,22) or Color3.fromRGB(12,12,18)
         Instance.new("UICorner", card).CornerRadius = UDim.new(0,14)
+        local cardStroke = Instance.new("UIStroke", card)
+        cardStroke.Color = isCurrent and AP6.NeonGreen or Color3.fromRGB(25,25,30)
+        cardStroke.Thickness = 2
 
         local icon = Instance.new("TextLabel", card)
         icon.Size = UDim2.new(0,70,1,0)
-        icon.Text = "▶"
-        icon.TextColor3 = AP6.Cyan
+        icon.Text = isCurrent and "✅" or "⛔"
+        icon.TextColor3 = isCurrent and AP6.NeonGreen or Color3.fromRGB(200,50,50)
         icon.Font = Enum.Font.Code
-        icon.TextSize = 60
+        icon.TextSize = 50
         icon.BackgroundTransparency = 1
 
         local name = Instance.new("TextLabel", card)
-        name.Size = UDim2.new(1,-140,0,50)
+        name.Size = UDim2.new(1,-200,0,50)
         name.Position = UDim2.new(0,80,0,10)
         name.BackgroundTransparency = 1
         name.Text = info.name
-        name.TextColor3 = Color3.new(1,1,1)
+        name.TextColor3 = isCurrent and Color3.new(1,1,1) or Color3.fromRGB(180,180,180)
         name.Font = Enum.Font.GothamBold
         name.TextSize = 26
         name.TextXAlignment = Enum.TextXAlignment.Left
 
+        local status = Instance.new("TextLabel", card)
+        status.Size = UDim2.new(0,120,0,30)
+        status.Position = UDim2.new(1,-140,0,15)
+        status.BackgroundTransparency = 1
+        status.Text = isCurrent and "READY" or "Not in game"
+        status.TextColor3 = isCurrent and AP6.NeonGreen or Color3.fromRGB(200,50,50)
+        status.Font = Enum.Font.Gotham
+        status.TextSize = 16
+
         local btn = Instance.new("TextButton", card)
         btn.Size = UDim2.new(0,160,0,46)
         btn.Position = UDim2.new(1,-180,0.5,-23)
-        btn.BackgroundColor3 = AP6.NeonGreen
-        btn.Text = "BREACH"
-        btn.TextColor3 = Color3.new(0,0,0)
+        btn.BackgroundColor3 = isCurrent and AP6.NeonGreen or Color3.fromRGB(40,40,45)
+        btn.Text = isCurrent and "BREACH" or "LOCKED"
+        btn.TextColor3 = isCurrent and Color3.new(0,0,0) or Color3.new(1,1,1)
         btn.Font = Enum.Font.GothamBlack
         btn.TextSize = 18
         Instance.new("UICorner", btn).CornerRadius = UDim.new(0,10)
 
         btn.MouseButton1Click:Connect(function()
-            AP6:PlaySound(AP6.Sounds.Click)
-            AP6:Notify("BREACHING", info.name, 3)
-            task.wait(1.5)
-            gui:Destroy()
-            loadstring(game:HttpGet(info.url))()
+            if isCurrent then
+                AP6:Notify("BREACHING", info.name, 3)
+                task.wait(1.5)
+                gui:Destroy()
+                loadstring(game:HttpGet(info.url))()
+            else
+                AP6:Notify("ERROR", "you not are in the game", 4)
+            end
+        end)
+
+        card.MouseEnter:Connect(function()
+            TweenService:Create(cardStroke, TweenInfo.new(0.2), {Color = isCurrent and AP6.NeonGreen or AP6.Cyan, Thickness = 3}):Play()
+        end)
+        card.MouseLeave:Connect(function()
+            TweenService:Create(cardStroke, TweenInfo.new(0.2), {Color = isCurrent and AP6.NeonGreen or Color3.fromRGB(25,25,30), Thickness = 2}):Play()
         end)
     end
 
     scroll.CanvasSize = UDim2.new(0,0,0, layout.AbsoluteContentSize.Y + 40)
 
-    
     local dragging, dragStart, startPos
     main.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -267,7 +298,7 @@ function AP6:CreateMainUI(games)
         end
     end)
 
-    AP6:Notify("NEURONET", "Welcome back, Ap6ykx3", 3)
+    AP6:Notify("StudiosHUB", "Welcome back, Ap6ykx3", 3)
 end
 
 function AP6:Init(games)
