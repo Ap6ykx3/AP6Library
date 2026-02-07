@@ -1,6 +1,5 @@
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
@@ -26,19 +25,14 @@ function AP6:PlaySound(id)
     game.Debris:AddItem(s, 3)
 end
 
-function AP6:TypeText(label, text, speed, callback)
+
+function AP6:TypeText(label, text, speed)
     label.Text = ""
-    local i = 1
-    local conn = RunService.Heartbeat:Connect(function()
-        if i > #text then
-            conn:Disconnect()
-            if callback then callback() end
-            return
-        end
+    for i = 1, #text do
         label.Text = text:sub(1, i)
-        i += 1
         if math.random(1,3) == 1 then AP6:PlaySound(AP6.Sounds.Type) end
-    end)
+        task.wait(speed or 0.025)
+    end
 end
 
 function AP6:BootSequence(callback)
@@ -58,13 +52,12 @@ function AP6:BootSequence(callback)
     logo.TextColor3 = AP6.Cyan
     logo.Font = Enum.Font.Code
     logo.TextSize = 68
-    logo.TextStrokeTransparency = 0.5
 
     local sub = Instance.new("TextLabel", bg)
     sub.Size = UDim2.new(0,700,0,40)
     sub.Position = UDim2.new(0.5,-350,0.45,0)
     sub.BackgroundTransparency = 1
-    sub.Text = "TERMINATOR v3.1 — SHADOW PROTOCOL"
+    sub.Text = "TERMINATOR v3.2 — SHADOW PROTOCOL"
     sub.TextColor3 = AP6.NeonGreen
     sub.Font = Enum.Font.Code
     sub.TextSize = 26
@@ -77,7 +70,6 @@ function AP6:BootSequence(callback)
     console.Font = Enum.Font.Code
     console.TextSize = 19
     console.TextXAlignment = Enum.TextXAlignment.Left
-    console.TextYAlignment = Enum.TextYAlignment.Top
 
     AP6:PlaySound(AP6.Sounds.Boot)
 
@@ -92,13 +84,13 @@ function AP6:BootSequence(callback)
 
     local full = ""
     for _, line in ipairs(lines) do
-        AP6:TypeText(console, full .. line .. "\n", 0.025, function()
-            full = full .. line .. "\n"
-        end)
-        task.wait(0.65)
+        local toType = full .. line .. "\n"
+        AP6:TypeText(console, toType, 0.025)
+        full = toType
+        task.wait(0.45)
     end
 
-    task.wait(1.6)
+    task.wait(1.2)
     TweenService:Create(bg, TweenInfo.new(0.8), {BackgroundTransparency = 1}):Play()
     task.wait(1)
     gui:Destroy()
@@ -126,7 +118,6 @@ function AP6:Notify(title, text, duration)
     local frame = Instance.new("Frame", holder)
     frame.Size = UDim2.new(1,0,0,82)
     frame.BackgroundColor3 = Color3.fromRGB(10,10,15)
-    frame.BackgroundTransparency = 1
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0,14)
     local stroke = Instance.new("UIStroke", frame)
     stroke.Color = AP6.Cyan
@@ -181,7 +172,6 @@ function AP6:CreateMainUI(games)
     stroke.Color = AP6.Cyan
     stroke.Thickness = 3
 
-    
     local header = Instance.new("Frame", main)
     header.Size = UDim2.new(1,0,0,56)
     header.BackgroundColor3 = Color3.fromRGB(12,12,18)
@@ -191,13 +181,12 @@ function AP6:CreateMainUI(games)
     title.Size = UDim2.new(1,-20,1,0)
     title.Position = UDim2.new(0,25,0,0)
     title.BackgroundTransparency = 1
-    title.Text = "AP6 NEURONET  •  TERMINATOR v3.1"
+    title.Text = "AP6 NEURONET  •  TERMINATOR v3.2"
     title.TextColor3 = AP6.Cyan
     title.Font = Enum.Font.Code
     title.TextSize = 28
     title.TextXAlignment = Enum.TextXAlignment.Left
 
-    
     local scroll = Instance.new("ScrollingFrame", main)
     scroll.Size = UDim2.new(1, -40, 1, -120)
     scroll.Position = UDim2.new(0, 20, 0, 80)
@@ -208,7 +197,7 @@ function AP6:CreateMainUI(games)
     local layout = Instance.new("UIListLayout", scroll)
     layout.Padding = UDim.new(0, 18)
 
-    for placeId, info in pairs(games) do
+    for _, info in pairs(games) do
         local card = Instance.new("Frame", scroll)
         card.Size = UDim2.new(1,0,0,100)
         card.BackgroundColor3 = Color3.fromRGB(12,12,18)
