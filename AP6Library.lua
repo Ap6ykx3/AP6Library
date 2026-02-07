@@ -1,306 +1,281 @@
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
+local AP6 = {
+    UI = {},
+    Theme = {
+        Main = Color3.fromRGB(8, 8, 12),
+        Accent = Color3.fromRGB(0, 255, 255),
+        Secondary = Color3.fromRGB(0, 255, 130),
+        DarkText = Color3.fromRGB(150, 150, 150),
+        Outline = Color3.fromRGB(25, 25, 35)
+    }
+}
+
 local function getExecutor()
-    if identifyexecutor then return identifyexecutor().Name end
-    if getexecutorname then return getexecutorname() end
-    return "Unknown Executor"
+    if identifyexecutor then return identifyexecutor() end
+    return "Generic"
 end
 
-local AP6 = {
-    PlayerGui = PlayerGui,
-    NeonGreen = Color3.fromRGB(0, 255, 130),
-    Cyan = Color3.fromRGB(0, 255, 255),
-    Dark = Color3.fromRGB(6, 6, 10)
-}
+function AP6:CreateElement(className, properties, parent)
+    local inst = Instance.new(className)
+    for k, v in pairs(properties) do inst[k] = v end
+    inst.Parent = parent
+    return inst
+end
+
+function AP6:ApplyTween(obj, info, goal)
+    local tween = TweenService:Create(obj, TweenInfo.new(unpack(info)), goal)
+    tween:Play()
+    return tween
+end
 
 function AP6:TypeText(label, text, speed)
     label.Text = ""
     for i = 1, #text do
         label.Text = text:sub(1, i)
-        task.wait(speed or 0.025)
+        task.wait(speed or 0.015)
     end
 end
 
 function AP6:BootSequence(callback)
-    local gui = Instance.new("ScreenGui", AP6.PlayerGui)
-    gui.Name = "AP6_BOOT"
-    gui.IgnoreGuiInset = true
+    local gui = self:CreateElement("ScreenGui", {Name = "AP6_BOOT", IgnoreGuiInset = true}, PlayerGui)
+    local canvas = self:CreateElement("CanvasGroup", {Size = UDim2.new(1, 0, 1, 0), BackgroundColor3 = self.Theme.Main, GroupTransparency = 1}, gui)
+    
+    local logo = self:CreateElement("TextLabel", {
+        Size = UDim2.new(0, 400, 0, 100),
+        Position = UDim2.new(0.5, -200, 0.45, -50),
+        BackgroundTransparency = 1,
+        Text = "AP6",
+        TextColor3 = Color3.new(1,1,1),
+        Font = Enum.Font.Code,
+        TextSize = 120,
+        TextStrokeTransparency = 0.8
+    }, canvas)
+    
+    local barFrame = self:CreateElement("Frame", {
+        Size = UDim2.new(0, 300, 0, 2),
+        Position = UDim2.new(0.5, -150, 0.55, 0),
+        BackgroundColor3 = self.Theme.Outline,
+        BorderSizePixel = 0
+    }, canvas)
+    
+    local bar = self:CreateElement("Frame", {Size = UDim2.new(0, 0, 1, 0), BackgroundColor3 = self.Theme.Accent, BorderSizePixel = 0}, barFrame)
+    
+    local log = self:CreateElement("TextLabel", {
+        Size = UDim2.new(0, 400, 0, 20),
+        Position = UDim2.new(0.5, -200, 0.57, 0),
+        BackgroundTransparency = 1,
+        TextColor3 = self.Theme.DarkText,
+        Text = "INITIALIZING...",
+        Font = Enum.Font.Code,
+        TextSize = 14
+    }, canvas)
 
-    local bg = Instance.new("Frame", gui)
-    bg.Size = UDim2.new(1,0,1,0)
-    bg.BackgroundColor3 = AP6.Dark
-
-    local logo = Instance.new("TextLabel", bg)
-    logo.Size = UDim2.new(0,900,0,130)
-    logo.Position = UDim2.new(0.5,-450,0.25,0)
-    logo.BackgroundTransparency = 1
-    logo.Text = "AP6 HUB"
-    logo.TextColor3 = AP6.Cyan
-    logo.Font = Enum.Font.Code
-    logo.TextSize = 92
-    logo.TextStrokeTransparency = 0.3
-
-    local sub = Instance.new("TextLabel", bg)
-    sub.Size = UDim2.new(0,900,0,50)
-    sub.Position = UDim2.new(0.5,-450,0.4,0)
-    sub.BackgroundTransparency = 1
-    sub.Text = "TERMINATOR v3.2 — UNIVERSAL INJECTOR"
-    sub.TextColor3 = AP6.NeonGreen
-    sub.Font = Enum.Font.Code
-    sub.TextSize = 34
-
-    local progBg = Instance.new("Frame", bg)
-    progBg.Size = UDim2.new(0,700,0,14)
-    progBg.Position = UDim2.new(0.5,-350,0.55,0)
-    progBg.BackgroundColor3 = Color3.fromRGB(20,20,25)
-    Instance.new("UICorner", progBg).CornerRadius = UDim.new(0,999)
-
-    local prog = Instance.new("Frame", progBg)
-    prog.Size = UDim2.new(0,0,1,0)
-    prog.BackgroundColor3 = AP6.Cyan
-    Instance.new("UICorner", prog).CornerRadius = UDim.new(0,999)
-
-    local console = Instance.new("TextLabel", bg)
-    console.Size = UDim2.new(0.75,0,0.32,0)
-    console.Position = UDim2.new(0.125,0,0.65,0)
-    console.BackgroundTransparency = 1
-    console.TextColor3 = AP6.NeonGreen
-    console.Font = Enum.Font.Code
-    console.TextSize = 21
-    console.TextXAlignment = Enum.TextXAlignment.Left
-
-    TweenService:Create(prog, TweenInfo.new(3.8, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,1,0)}):Play()
-
-    local lines = {
-        "[EXECUTOR] " .. getExecutor(),
-        "[CORE] Initializing AP6 HUB...",
-        "[SHADOW] Establishing encrypted tunnel...",
-        "[ANTI] Bypassing detection layers...",
-        "[PAYLOAD] Loading universal injector...",
-        "[TARGET] Scanning supported universes...",
-        "[SUCCESS] All modules loaded. Ready."
-    }
-
-    local full = ""
-    for _, line in ipairs(lines) do
-        local toType = full .. line .. "\n"
-        AP6:TypeText(console, toType, 0.022)
-        full = toType
-        task.wait(0.45)
+    self:ApplyTween(canvas, {0.8}, {GroupTransparency = 0})
+    task.wait(0.5)
+    
+    local stages = {"ACCESSING KERNEL", "BYPASSING_HEURISTICS", "DECRYPTING_UI", "AP6_READY"}
+    for i, msg in ipairs(stages) do
+        log.Text = msg
+        self:ApplyTween(bar, {0.6, Enum.EasingStyle.Quart}, {Size = UDim2.new(i/#stages, 0, 1, 0)})
+        task.wait(0.7)
     end
 
-    task.wait(1.6)
-    TweenService:Create(bg, TweenInfo.new(1.2, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
-    TweenService:Create(logo, TweenInfo.new(1.2), {TextTransparency = 1}):Play()
-    TweenService:Create(sub, TweenInfo.new(1.2), {TextTransparency = 1}):Play()
-    TweenService:Create(console, TweenInfo.new(1.2), {TextTransparency = 1}):Play()
-    task.wait(1.4)
+    self:ApplyTween(canvas, {0.8}, {GroupTransparency = 1})
+    task.wait(0.8)
     gui:Destroy()
     callback()
 end
 
 function AP6:Notify(title, text, duration)
-    local gui = AP6.PlayerGui:FindFirstChild("AP6_NOTIFY") or Instance.new("ScreenGui", AP6.PlayerGui)
-    gui.Name = "AP6_NOTIFY"
-    gui.IgnoreGuiInset = true
+    local gui = PlayerGui:FindFirstChild("AP6_NOTIF") or self:CreateElement("ScreenGui", {Name = "AP6_NOTIF", IgnoreGuiInset = true}, PlayerGui)
+    local container = gui:FindFirstChild("Holder") or self:CreateElement("Frame", {
+        Name = "Holder",
+        Size = UDim2.new(0, 300, 1, 0),
+        Position = UDim2.new(1, -320, 0, 0),
+        BackgroundTransparency = 1
+    }, gui)
+    
+    local layout = container:FindFirstChild("Layout") or self:CreateElement("UIListLayout", {
+        Name = "Layout",
+        VerticalAlignment = Enum.VerticalAlignment.Bottom,
+        Padding = UDim.new(0, 10)
+    }, container)
 
-    local holder = gui:FindFirstChild("Holder") or Instance.new("Frame", gui)
-    holder.Name = "Holder"
-    holder.Size = UDim2.new(0, 380, 1, -120)
-    holder.Position = UDim2.new(1, -400, 0, 60)
-    holder.BackgroundTransparency = 1
+    local notif = self:CreateElement("CanvasGroup", {
+        Size = UDim2.new(1, 0, 0, 80),
+        BackgroundColor3 = Color3.fromRGB(12, 12, 16),
+        GroupTransparency = 1
+    }, container)
+    self:CreateElement("UICorner", {CornerRadius = UDim.new(0, 4)}, notif)
+    self:CreateElement("UIStroke", {Color = self.Theme.Accent, Thickness = 1.2}, notif)
 
-    if not holder:FindFirstChild("List") then
-        local l = Instance.new("UIListLayout", holder)
-        l.Padding = UDim.new(0, 12)
-        l.VerticalAlignment = Enum.VerticalAlignment.Bottom
-    end
+    local t = self:CreateElement("TextLabel", {
+        Size = UDim2.new(1, -20, 0, 30),
+        Position = UDim2.new(0, 10, 0, 5),
+        BackgroundTransparency = 1,
+        Text = title:upper(),
+        TextColor3 = self.Theme.Accent,
+        Font = Enum.Font.GothamBold,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left
+    }, notif)
+    
+    local d = self:CreateElement("TextLabel", {
+        Size = UDim2.new(1, -20, 0, 40),
+        Position = UDim2.new(0, 10, 0, 30),
+        BackgroundTransparency = 1,
+        Text = text,
+        TextColor3 = Color3.new(0.8, 0.8, 0.8),
+        Font = Enum.Font.Gotham,
+        TextSize = 12,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextWrapped = true
+    }, notif)
 
-    local frame = Instance.new("Frame", holder)
-    frame.Size = UDim2.new(1,0,0,82)
-    frame.BackgroundColor3 = Color3.fromRGB(10,10,15)
-    Instance.new("UICorner", frame).CornerRadius = UDim.new(0,14)
-    local stroke = Instance.new("UIStroke", frame)
-    stroke.Color = AP6.Cyan
-    stroke.Thickness = 2.5
-
-    local t = Instance.new("TextLabel", frame)
-    t.Size = UDim2.new(1,-30,0,26)
-    t.Position = UDim2.new(0,20,0,14)
-    t.BackgroundTransparency = 1
-    t.Text = title
-    t.TextColor3 = AP6.Cyan
-    t.Font = Enum.Font.GothamBlack
-    t.TextSize = 17
-
-    local d = Instance.new("TextLabel", frame)
-    d.Size = UDim2.new(1,-30,0,40)
-    d.Position = UDim2.new(0,20,0,38)
-    d.BackgroundTransparency = 1
-    d.Text = text
-    d.TextColor3 = Color3.new(1,1,1)
-    d.Font = Enum.Font.Gotham
-    d.TextSize = 15
-    d.TextWrapped = true
-
-    TweenService:Create(frame, TweenInfo.new(0.5), {BackgroundTransparency = 0}):Play()
-    TweenService:Create(stroke, TweenInfo.new(0.5), {Transparency = 0}):Play()
-    TweenService:Create(t, TweenInfo.new(0.6), {TextTransparency = 0}):Play()
-    TweenService:Create(d, TweenInfo.new(0.6), {TextTransparency = 0}):Play()
-
+    self:ApplyTween(notif, {0.4}, {GroupTransparency = 0})
     task.delay(duration or 4, function()
-        TweenService:Create(frame, TweenInfo.new(0.6), {BackgroundTransparency = 1}):Play()
-        TweenService:Create(stroke, TweenInfo.new(0.6), {Transparency = 1}):Play()
-        TweenService:Create(t, TweenInfo.new(0.6), {TextTransparency = 1}):Play()
-        TweenService:Create(d, TweenInfo.new(0.6), {TextTransparency = 1}):Play()
-        task.wait(0.7)
-        frame:Destroy()
+        self:ApplyTween(notif, {0.4}, {GroupTransparency = 1})
+        task.wait(0.4)
+        notif:Destroy()
     end)
 end
 
 function AP6:CreateMainUI(games)
-    local gui = Instance.new("ScreenGui", AP6.PlayerGui)
-    gui.Name = "AP6_HUB"
-    gui.IgnoreGuiInset = true
-    gui.ResetOnSpawn = false
+    local gui = self:CreateElement("ScreenGui", {Name = "AP6_HUB", IgnoreGuiInset = true, ResetOnSpawn = false}, PlayerGui)
+    local main = self:CreateElement("CanvasGroup", {
+        Size = UDim2.new(0, 650, 0, 400),
+        Position = UDim2.new(0.5, -325, 0.5, -200),
+        BackgroundColor3 = self.Theme.Main,
+        GroupTransparency = 1
+    }, gui)
+    
+    self:CreateElement("UICorner", {CornerRadius = UDim.new(0, 6)}, main)
+    self:CreateElement("UIStroke", {Color = self.Theme.Outline, Thickness = 1}, main)
+    
+    local sidebar = self:CreateElement("Frame", {
+        Size = UDim2.new(0, 180, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(12, 12, 18),
+        BorderSizePixel = 0
+    }, main)
+    
+    self:CreateElement("TextLabel", {
+        Size = UDim2.new(1, 0, 0, 60),
+        BackgroundTransparency = 1,
+        Text = "AP6 HUB",
+        TextColor3 = self.Theme.Accent,
+        Font = Enum.Font.Code,
+        TextSize = 24
+    }, sidebar)
 
-    local main = Instance.new("Frame", gui)
-    main.Size = UDim2.new(0, 960, 0, 580)
-    main.Position = UDim2.new(0.5, -480, 0.5, -290)
-    main.BackgroundColor3 = AP6.Dark
-    Instance.new("UICorner", main).CornerRadius = UDim.new(0, 16)
-    local stroke = Instance.new("UIStroke", main)
-    stroke.Color = AP6.Cyan
-    stroke.Thickness = 3
+    local infoBox = self:CreateElement("Frame", {
+        Size = UDim2.new(1, -20, 0, 60),
+        Position = UDim2.new(0, 10, 1, -70),
+        BackgroundColor3 = Color3.fromRGB(15, 15, 22),
+    }, sidebar)
+    self:CreateElement("UICorner", {CornerRadius = UDim.new(0, 4)}, infoBox)
+    
+    local execText = self:CreateElement("TextLabel", {
+        Size = UDim2.new(1, -10, 1, 0),
+        Position = UDim2.new(0, 5, 0, 0),
+        BackgroundTransparency = 1,
+        Text = "EXEC: " .. getExecutor(),
+        TextColor3 = self.Theme.Secondary,
+        Font = Enum.Font.Code,
+        TextSize = 12,
+        TextXAlignment = Enum.TextXAlignment.Left
+    }, infoBox)
 
-    local header = Instance.new("Frame", main)
-    header.Size = UDim2.new(1,0,0,56)
-    header.BackgroundColor3 = Color3.fromRGB(12,12,18)
-    Instance.new("UICorner", header).CornerRadius = UDim.new(0,16)
+    local scroll = self:CreateElement("ScrollingFrame", {
+        Size = UDim2.new(1, -200, 1, -20),
+        Position = UDim2.new(0, 190, 0, 10),
+        BackgroundTransparency = 1,
+        ScrollBarThickness = 2,
+        ScrollBarImageColor3 = self.Theme.Accent
+    }, main)
+    
+    local layout = self:CreateElement("UIListLayout", {Padding = UDim.new(0, 8)}, scroll)
 
-    local title = Instance.new("TextLabel", header)
-    title.Size = UDim2.new(1,-20,1,0)
-    title.Position = UDim2.new(0,25,0,0)
-    title.BackgroundTransparency = 1
-    title.Text = "AP6 HUB  •  TERMINATOR v3.2"
-    title.TextColor3 = AP6.Cyan
-    title.Font = Enum.Font.Code
-    title.TextSize = 28
-    title.TextXAlignment = Enum.TextXAlignment.Left
+    for id, data in pairs(games) do
+        local active = (id == game.PlaceId)
+        local item = self:CreateElement("Frame", {
+            Size = UDim2.new(1, -10, 0, 50),
+            BackgroundColor3 = active and Color3.fromRGB(20, 20, 30) or Color3.fromRGB(12, 12, 18),
+            BorderSizePixel = 0
+        }, scroll)
+        self:CreateElement("UICorner", {CornerRadius = UDim.new(0, 4)}, item)
+        
+        local accent = self:CreateElement("Frame", {
+            Size = UDim2.new(0, 3, 1, 0),
+            BackgroundColor3 = active and self.Theme.Accent or self.Theme.Outline,
+            BorderSizePixel = 0
+        }, item)
 
-    local scroll = Instance.new("ScrollingFrame", main)
-    scroll.Size = UDim2.new(1, -40, 1, -120)
-    scroll.Position = UDim2.new(0, 20, 0, 80)
-    scroll.BackgroundTransparency = 1
-    scroll.ScrollBarThickness = 5
-    scroll.ScrollBarImageColor3 = AP6.Cyan
+        self:CreateElement("TextLabel", {
+            Size = UDim2.new(1, -100, 1, 0),
+            Position = UDim2.new(0, 15, 0, 0),
+            BackgroundTransparency = 1,
+            Text = data.name:upper(),
+            TextColor3 = active and Color3.new(1,1,1) or self.Theme.DarkText,
+            Font = Enum.Font.GothamBold,
+            TextSize = 13,
+            TextXAlignment = Enum.TextXAlignment.Left
+        }, item)
 
-    local layout = Instance.new("UIListLayout", scroll)
-    layout.Padding = UDim.new(0, 18)
-
-    local currentPlace = game.PlaceId
-    for placeId, info in pairs(games) do
-        local isCurrent = (placeId == currentPlace)
-        local card = Instance.new("Frame", scroll)
-        card.Size = UDim2.new(1,0,0,100)
-        card.BackgroundColor3 = isCurrent and Color3.fromRGB(15,15,22) or Color3.fromRGB(12,12,18)
-        Instance.new("UICorner", card).CornerRadius = UDim.new(0,14)
-        local cardStroke = Instance.new("UIStroke", card)
-        cardStroke.Color = isCurrent and AP6.NeonGreen or Color3.fromRGB(25,25,30)
-        cardStroke.Thickness = 2
-
-        local icon = Instance.new("TextLabel", card)
-        icon.Size = UDim2.new(0,70,1,0)
-        icon.Text = isCurrent and "✅" or "⛔"
-        icon.TextColor3 = isCurrent and AP6.NeonGreen or Color3.fromRGB(200,50,50)
-        icon.Font = Enum.Font.Code
-        icon.TextSize = 50
-        icon.BackgroundTransparency = 1
-
-        local name = Instance.new("TextLabel", card)
-        name.Size = UDim2.new(1,-200,0,50)
-        name.Position = UDim2.new(0,80,0,10)
-        name.BackgroundTransparency = 1
-        name.Text = info.name
-        name.TextColor3 = isCurrent and Color3.new(1,1,1) or Color3.fromRGB(180,180,180)
-        name.Font = Enum.Font.GothamBold
-        name.TextSize = 26
-        name.TextXAlignment = Enum.TextXAlignment.Left
-
-        local status = Instance.new("TextLabel", card)
-        status.Size = UDim2.new(0,120,0,30)
-        status.Position = UDim2.new(1,-140,0,15)
-        status.BackgroundTransparency = 1
-        status.Text = isCurrent and "READY" or "Not in game"
-        status.TextColor3 = isCurrent and AP6.NeonGreen or Color3.fromRGB(200,50,50)
-        status.Font = Enum.Font.Gotham
-        status.TextSize = 16
-
-        local btn = Instance.new("TextButton", card)
-        btn.Size = UDim2.new(0,160,0,46)
-        btn.Position = UDim2.new(1,-180,0.5,-23)
-        btn.BackgroundColor3 = isCurrent and AP6.NeonGreen or Color3.fromRGB(40,40,45)
-        btn.Text = isCurrent and "BREACH" or "LOCKED"
-        btn.TextColor3 = isCurrent and Color3.new(0,0,0) or Color3.new(1,1,1)
-        btn.Font = Enum.Font.GothamBlack
-        btn.TextSize = 18
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0,10)
+        local btn = self:CreateElement("TextButton", {
+            Size = UDim2.new(0, 80, 0, 26),
+            Position = UDim2.new(1, -90, 0.5, -13),
+            BackgroundColor3 = active and self.Theme.Accent or self.Theme.Outline,
+            Text = active and "BREACH" or "LOCKED",
+            TextColor3 = active and Color3.new(0,0,0) or self.Theme.DarkText,
+            Font = Enum.Font.GothamBlack,
+            TextSize = 11
+        }, item)
+        self:CreateElement("UICorner", {CornerRadius = UDim.new(0, 4)}, btn)
 
         btn.MouseButton1Click:Connect(function()
-            if isCurrent then
-                AP6:Notify("BREACHING", info.name, 3)
-                task.wait(1.5)
+            if active then
+                self:ApplyTween(main, {0.5}, {GroupTransparency = 1})
+                task.wait(0.5)
                 gui:Destroy()
-                loadstring(game:HttpGet(info.url))()
+                loadstring(game:HttpGet(data.url))()
             else
-                AP6:Notify("ERROR", "you not are in the game", 4)
+                self:Notify("ACCESS DENIED", "Target mismatch.", 3)
             end
-        end)
-
-        card.MouseEnter:Connect(function()
-            TweenService:Create(cardStroke, TweenInfo.new(0.2), {Color = isCurrent and AP6.NeonGreen or AP6.Cyan, Thickness = 3}):Play()
-        end)
-        card.MouseLeave:Connect(function()
-            TweenService:Create(cardStroke, TweenInfo.new(0.2), {Color = isCurrent and AP6.NeonGreen or Color3.fromRGB(25,25,30), Thickness = 2}):Play()
         end)
     end
 
-    scroll.CanvasSize = UDim2.new(0,0,0, layout.AbsoluteContentSize.Y + 40)
-
-    local dragging, dragStart, startPos
-    main.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = main.Position
+    scroll.CanvasSize = UDim2.new(0,0,0, layout.AbsoluteContentSize.Y)
+    
+    self:ApplyTween(main, {1}, {GroupTransparency = 0})
+    
+    local drag = {}
+    main.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 then
+            drag.Active = true
+            drag.Start = i.Position
+            drag.Pos = main.Position
         end
     end)
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - dragStart
-            main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    UserInputService.InputChanged:Connect(function(i)
+        if drag.Active and i.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = i.Position - drag.Start
+            main.Position = UDim2.new(drag.Pos.X.Scale, drag.Pos.X.Offset + delta.X, drag.Pos.Y.Scale, drag.Pos.Y.Offset + delta.Y)
         end
     end)
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+    UserInputService.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 then drag.Active = false end
     end)
-
-    UserInputService.InputBegan:Connect(function(key)
-        if key.KeyCode == Enum.KeyCode.RightShift then
-            gui.Enabled = not gui.Enabled
-        end
-    end)
-
-    AP6:Notify("AP6 HUB", "Welcome back, Ap6ykx3", 3)
 end
 
 function AP6:Init(games)
-    AP6:BootSequence(function()
-        AP6:CreateMainUI(games)
+    self:BootSequence(function()
+        self:CreateMainUI(games)
     end)
 end
 
