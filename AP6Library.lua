@@ -6,272 +6,284 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 
 local AP6 = {
     Theme = {
-        Main = Color3.fromRGB(8, 8, 10),
-        Secondary = Color3.fromRGB(12, 12, 16),
+        Main = Color3.fromRGB(10, 10, 14),
+        Secondary = Color3.fromRGB(15, 15, 22),
         Accent = Color3.fromRGB(0, 255, 150),
         Cyan = Color3.fromRGB(0, 255, 255),
-        Red = Color3.fromRGB(255, 60, 60),
-        Outline = Color3.fromRGB(35, 35, 45),
+        Red = Color3.fromRGB(255, 65, 65),
+        Outline = Color3.fromRGB(40, 40, 50),
         Text = Color3.fromRGB(255, 255, 255)
     },
-    Executor = (identifyexecutor and identifyexecutor()) or "Unknown Executor"
+    Executor = (identifyexecutor and identifyexecutor()) or "Standard Environment"
 }
 
--- [ UTILS ]
 function AP6:Tween(obj, time, goal)
-    local t = TweenService:Create(obj, TweenInfo.new(time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), goal)
-    t:Play()
-    return t
+    local info = TweenInfo.new(time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    local anim = TweenService:Create(obj, info, goal)
+    anim:Play()
+    return anim
 end
 
 function AP6:Confetti()
-    local gui = Instance.new("ScreenGui", PlayerGui)
-    gui.Name = "AP6_CONFETTI"
-    for i = 1, 60 do
+    local container = Instance.new("ScreenGui", PlayerGui)
+    container.Name = "AP6_FX"
+    for i = 1, 75 do
         task.spawn(function()
-            local p = Instance.new("Frame", gui)
-            p.Size = UDim2.new(0, math.random(6,12), 0, math.random(6,12))
+            local p = Instance.new("Frame", container)
+            p.Size = UDim2.new(0, math.random(5, 10), 0, math.random(5, 10))
             p.Position = UDim2.new(math.random(), 0, -0.1, 0)
-            p.BackgroundColor3 = Color3.fromHSV(math.random(), 0.8, 1)
+            p.BackgroundColor3 = Color3.fromHSV(math.random(), 0.7, 1)
             p.BorderSizePixel = 0
-            p.Rotation = math.random(0, 360)
             Instance.new("UICorner", p).CornerRadius = UDim.new(1, 0)
             
-            local t = self:Tween(p, math.random(2, 5), {
-                Position = UDim2.new(p.Position.X.Scale + math.random(-0.1, 0.1), 0, 1.1, 0),
-                Rotation = math.random(0, 1000)
+            local drift = math.random(-150, 150) / 1000
+            local fall = self:Tween(p, math.random(2, 4), {
+                Position = UDim2.new(p.Position.X.Scale + drift, 0, 1.1, 0),
+                Rotation = math.random(0, 720)
             })
-            t.Completed:Wait()
+            fall.Completed:Wait()
             p:Destroy()
         end)
     end
-    task.delay(6, function() gui:Destroy() end)
+    task.delay(5, function() container:Destroy() end)
 end
 
 function AP6:Notify(title, msg, dur)
-    dur = dur or 3
-    local g = PlayerGui:FindFirstChild("AP6_NOTIF_GUI") or Instance.new("ScreenGui", PlayerGui)
-    g.Name = "AP6_NOTIF_GUI"
-    g.IgnoreGuiInset = true
+    local gui = PlayerGui:FindFirstChild("AP6_NOTIF_SYSTEM") or Instance.new("ScreenGui", PlayerGui)
+    gui.Name = "AP6_NOTIF_SYSTEM"
+    gui.IgnoreGuiInset = true
 
-    local h = g:FindFirstChild("Holder") or Instance.new("Frame", g)
-    h.Name = "Holder"
-    h.Size = UDim2.new(0, 300, 1, -20)
-    h.Position = UDim2.new(1, -310, 0, 10)
-    h.BackgroundTransparency = 1
+    local holder = gui:FindFirstChild("Holder") or Instance.new("Frame", gui)
+    holder.Name = "Holder"
+    holder.Size = UDim2.new(0, 300, 1, -20)
+    holder.Position = UDim2.new(1, -310, 0, 10)
+    holder.BackgroundTransparency = 1
     
-    if not h:FindFirstChild("UIListLayout") then
-        local l = Instance.new("UIListLayout", h)
+    if not holder:FindFirstChild("Layout") then
+        local l = Instance.new("UIListLayout", holder)
+        l.Name = "Layout"
         l.VerticalAlignment = Enum.VerticalAlignment.Bottom
-        l.Padding = UDim.new(0, 8)
+        l.Padding = UDim.new(0, 10)
     end
 
-    local c = Instance.new("CanvasGroup", h)
-    c.Size = UDim2.new(1, 0, 0, 70)
-    c.BackgroundColor3 = self.Theme.Secondary
-    c.GroupTransparency = 1
-    Instance.new("UICorner", c).CornerRadius = UDim.new(0, 6)
-    local s = Instance.new("UIStroke", c)
-    s.Color = self.Theme.Accent
-    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    local card = Instance.new("CanvasGroup", holder)
+    card.Size = UDim2.new(1, 0, 0, 75)
+    card.BackgroundColor3 = self.Theme.Secondary
+    card.GroupTransparency = 1
+    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
+    
+    local stroke = Instance.new("UIStroke", card)
+    stroke.Color = self.Theme.Accent
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
-    local tl = Instance.new("TextLabel", c)
-    tl.Size = UDim2.new(1, -20, 0, 30)
-    tl.Position = UDim2.new(0, 12, 0, 5)
-    tl.BackgroundTransparency = 1
-    tl.Text = title:upper()
-    tl.TextColor3 = self.Theme.Accent
-    tl.Font = Enum.Font.Code
-    tl.TextSize = 13
-    tl.TextXAlignment = Enum.TextXAlignment.Left
+    local tHeader = Instance.new("TextLabel", card)
+    tHeader.Size = UDim2.new(1, -20, 0, 30)
+    tHeader.Position = UDim2.new(0, 12, 0, 8)
+    tHeader.BackgroundTransparency = 1
+    tHeader.Text = title:upper()
+    tHeader.TextColor3 = self.Theme.Accent
+    tHeader.Font = Enum.Font.Code
+    tHeader.TextSize = 14
+    tHeader.TextXAlignment = Enum.TextXAlignment.Left
 
-    local dl = Instance.new("TextLabel", c)
-    dl.Size = UDim2.new(1, -24, 0, 30)
-    dl.Position = UDim2.new(0, 12, 0, 32)
-    dl.BackgroundTransparency = 1
-    dl.Text = msg
-    dl.TextColor3 = Color3.new(1,1,1)
-    dl.Font = Enum.Font.Code
-    dl.TextSize = 11
-    dl.TextXAlignment = Enum.TextXAlignment.Left
-    dl.TextWrapped = true
+    local tBody = Instance.new("TextLabel", card)
+    tBody.Size = UDim2.new(1, -24, 0, 30)
+    tBody.Position = UDim2.new(0, 12, 0, 35)
+    tBody.BackgroundTransparency = 1
+    tBody.Text = msg
+    tBody.TextColor3 = Color3.new(1, 1, 1)
+    tBody.Font = Enum.Font.Code
+    tBody.TextSize = 11
+    tBody.TextXAlignment = Enum.TextXAlignment.Left
+    tBody.TextWrapped = true
 
-    self:Tween(c, 0.4, {GroupTransparency = 0})
-    task.delay(dur, function()
-        self:Tween(c, 0.4, {GroupTransparency = 1}):Completed:Wait()
-        c:Destroy()
+    self:Tween(card, 0.5, {GroupTransparency = 0})
+    task.delay(dur or 3, function()
+        local close = self:Tween(card, 0.5, {GroupTransparency = 1})
+        close.Completed:Wait()
+        card:Destroy()
     end)
 end
 
-function AP6:Boot(cb)
-    local g = Instance.new("ScreenGui", PlayerGui)
-    local c = Instance.new("CanvasGroup", g)
-    c.Size = UDim2.new(1, 0, 1, 0)
-    c.BackgroundColor3 = Color3.fromRGB(2, 2, 3)
-    c.GroupTransparency = 1
+function AP6:Boot(callback)
+    local screen = Instance.new("ScreenGui", PlayerGui)
+    screen.IgnoreGuiInset = true
+    
+    local canvas = Instance.new("CanvasGroup", screen)
+    canvas.Size = UDim2.new(1, 0, 1, 0)
+    canvas.BackgroundColor3 = Color3.fromRGB(2, 2, 4)
+    canvas.GroupTransparency = 0
 
-    local logo = Instance.new("TextLabel", c)
-    logo.Size = UDim2.new(0, 500, 0, 100)
-    logo.Position = UDim2.new(0.5, -250, 0.4, -50)
+    local logo = Instance.new("TextLabel", canvas)
+    logo.Size = UDim2.new(1, 0, 0, 100)
+    logo.Position = UDim2.new(0, 0, 0.4, -50)
     logo.BackgroundTransparency = 1
-    logo.Text = "AP6_HUB_STABLE"
+    logo.Text = "SYSTEM_LOADER_V4"
     logo.TextColor3 = self.Theme.Cyan
     logo.Font = Enum.Font.Code
-    logo.TextSize = 55
+    logo.TextSize = 50
     logo.TextTransparency = 1
 
-    local console = Instance.new("TextLabel", c)
-    console.Size = UDim2.new(0, 400, 0, 150)
-    console.Position = UDim2.new(0.5, -200, 0.5, 20)
-    console.BackgroundTransparency = 1
-    console.TextColor3 = self.Theme.Accent
-    console.Font = Enum.Font.Code
-    console.TextSize = 13
-    console.TextXAlignment = 0
-    console.TextYAlignment = 0
+    local barBg = Instance.new("Frame", canvas)
+    barBg.Size = UDim2.new(0, 300, 0, 4)
+    barBg.Position = UDim2.new(0.5, -150, 0.5, 20)
+    barBg.BackgroundColor3 = self.Theme.Outline
+    barBg.BorderSizePixel = 0
+    
+    local barFill = Instance.new("Frame", barBg)
+    barFill.Size = UDim2.new(0, 0, 1, 0)
+    barFill.BackgroundColor3 = self.Theme.Accent
+    barFill.BorderSizePixel = 0
 
-    self:Tween(c, 0.5, {GroupTransparency = 0})
     self:Tween(logo, 1, {TextTransparency = 0})
-    
-    local lines = {
-        "> Initializing AP6_v4_Kernel...",
-        "> Detecting Executor: " .. self.Executor,
-        "> Bypassing Memory Integrity...",
-        "> Finalizing User Interface...",
-        "> ACCESS GRANTED."
-    }
-    
-    local ct = ""
-    for _, line in ipairs(lines) do
-        ct = ct .. line .. "\n"
-        console.Text = ct
-        task.wait(0.3)
-    end
+    local load = self:Tween(barFill, 2.5, {Size = UDim2.new(1, 0, 1, 0)})
+    load.Completed:Wait()
     
     task.wait(0.5)
-    self:Tween(c, 0.8, {GroupTransparency = 1})
-    task.wait(0.8)
-    g:Destroy()
-    cb()
+    local fade = self:Tween(canvas, 0.8, {GroupTransparency = 1})
+    fade.Completed:Wait()
+    screen:Destroy()
+    callback()
 end
 
 function AP6:Init(games)
     self:Boot(function()
         self:Confetti()
-        self:Notify("SECURITY", "System Initialized as " .. self.Executor, 4)
+        self:Notify("AUTHORIZED", "Identity: " .. Player.Name, 4)
 
-        local g = Instance.new("ScreenGui", PlayerGui)
-        g.Name = "AP6_MAIN"
+        local mainGui = Instance.new("ScreenGui", PlayerGui)
+        mainGui.Name = "AP6_HUB"
         
-        local m = Instance.new("CanvasGroup", g)
-        m.Size = UDim2.new(0, 580, 0, 380)
-        m.Position = UDim2.new(0.5, -290, 0.5, -190)
-        m.BackgroundColor3 = self.Theme.Main
-        m.GroupTransparency = 1
-        Instance.new("UICorner", m).CornerRadius = UDim.new(0, 8)
-        local ms = Instance.new("UIStroke", m)
-        ms.Color = self.Theme.Outline
-        ms.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        local frame = Instance.new("CanvasGroup", mainGui)
+        frame.Size = UDim2.new(0, 600, 0, 400)
+        frame.Position = UDim2.new(0.5, -300, 0.5, -200)
+        frame.BackgroundColor3 = self.Theme.Main
+        frame.GroupTransparency = 1
+        Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+        local frameStroke = Instance.new("UIStroke", frame)
+        frameStroke.Color = self.Theme.Outline
+        frameStroke.Thickness = 2
+        frameStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
-        local tb = Instance.new("Frame", m)
-        tb.Size = UDim2.new(1, 0, 0, 35)
-        tb.BackgroundColor3 = self.Theme.Secondary
-        tb.BorderSizePixel = 0
+        local topBar = Instance.new("Frame", frame)
+        topBar.Size = UDim2.new(1, 0, 0, 45)
+        topBar.BackgroundColor3 = self.Theme.Secondary
+        topBar.BorderSizePixel = 0
 
-        local tit = Instance.new("TextLabel", tb)
-        tit.Size = UDim2.new(1, -100, 1, 0)
-        tit.Position = UDim2.new(0, 15, 0, 0)
-        tit.BackgroundTransparency = 1
-        tit.Text = "AP6 HUB // " .. self.Executor:upper()
-        tit.TextColor3 = self.Theme.Cyan
-        tit.Font = Enum.Font.Code
-        tit.TextSize = 12
-        tit.TextXAlignment = 0
+        local title = Instance.new("TextLabel", topBar)
+        title.Size = UDim2.new(1, -150, 1, 0)
+        title.Position = UDim2.new(0, 20, 0, 0)
+        title.BackgroundTransparency = 1
+        title.Text = "TERMINAL // " .. self.Executor:upper()
+        title.TextColor3 = self.Theme.Cyan
+        title.Font = Enum.Font.Code
+        title.TextSize = 14
+        title.TextXAlignment = Enum.TextXAlignment.Left
 
-        local close = Instance.new("TextButton", tb)
-        close.Size = UDim2.new(0, 35, 0, 35)
-        close.Position = UDim2.new(1, -35, 0, 0)
-        close.Text = "X"
-        close.BackgroundColor3 = self.Theme.Red
-        close.TextColor3 = Color3.new(1,1,1)
-        close.BorderSizePixel = 0
+        local closeBtn = Instance.new("TextButton", topBar)
+        closeBtn.Size = UDim2.new(0, 45, 0, 45)
+        closeBtn.Position = UDim2.new(1, -45, 0, 0)
+        closeBtn.Text = "✕"
+        closeBtn.BackgroundColor3 = self.Theme.Red
+        closeBtn.TextColor3 = Color3.new(1, 1, 1)
+        closeBtn.Font = Enum.Font.Code
+        closeBtn.TextSize = 18
+        closeBtn.BorderSizePixel = 0
 
-        local min = Instance.new("TextButton", tb)
-        min.Size = UDim2.new(0, 35, 0, 35)
-        min.Position = UDim2.new(1, -70, 0, 0)
-        min.Text = "-"
-        min.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        min.TextColor3 = Color3.new(1,1,1)
-        min.BorderSizePixel = 0
+        local minBtn = Instance.new("TextButton", topBar)
+        minBtn.Size = UDim2.new(0, 45, 0, 45)
+        minBtn.Position = UDim2.new(1, -90, 0, 0)
+        minBtn.Text = "—"
+        minBtn.BackgroundColor3 = self.Theme.Outline
+        minBtn.TextColor3 = Color3.new(1, 1, 1)
+        minBtn.Font = Enum.Font.Code
+        minBtn.TextSize = 18
+        minBtn.BorderSizePixel = 0
 
-        local sc = Instance.new("ScrollingFrame", m)
-        sc.Size = UDim2.new(1, -20, 1, -55)
-        sc.Position = UDim2.new(0, 10, 0, 45)
-        sc.BackgroundTransparency = 1
-        sc.ScrollBarThickness = 0
-        local ly = Instance.new("UIListLayout", sc)
-        ly.Padding = UDim.new(0, 8)
+        local scroll = Instance.new("ScrollingFrame", frame)
+        scroll.Size = UDim2.new(1, -30, 1, -70)
+        scroll.Position = UDim2.new(0, 15, 0, 60)
+        scroll.BackgroundTransparency = 1
+        scroll.ScrollBarThickness = 2
+        scroll.ScrollBarImageColor3 = self.Theme.Accent
+        
+        local layout = Instance.new("UIListLayout", scroll)
+        layout.Padding = UDim.new(0, 12)
 
         for id, data in pairs(games) do
-            local active = (tonumber(id) == game.PlaceId)
-            local item = Instance.new("Frame", sc)
-            item.Size = UDim2.new(1, -10, 0, 50)
+            local isCurrent = (tonumber(id) == game.PlaceId)
+            local item = Instance.new("Frame", scroll)
+            item.Size = UDim2.new(1, -10, 0, 60)
             item.BackgroundColor3 = self.Theme.Secondary
-            Instance.new("UICorner", item).CornerRadius = UDim.new(0, 6)
-            local itms = Instance.new("UIStroke", item)
-            itms.Color = active and self.Theme.Accent or self.Theme.Outline
+            Instance.new("UICorner", item).CornerRadius = UDim.new(0, 8)
+            local itemStroke = Instance.new("UIStroke", item)
+            itemStroke.Color = isCurrent and self.Theme.Accent or self.Theme.Outline
+            itemStroke.Thickness = 1
 
-            local label = Instance.new("TextLabel", item)
-            label.Size = UDim2.new(1, -130, 1, 0)
-            label.Position = UDim2.new(0, 15, 0, 0)
-            label.BackgroundTransparency = 1
-            label.Text = data.name:upper()
-            label.TextColor3 = active and Color3.new(1,1,1) or Color3.fromRGB(120, 120, 130)
-            label.Font = Enum.Font.Code
-            label.TextSize = 12
-            label.TextXAlignment = 0
+            local nameLabel = Instance.new("TextLabel", item)
+            nameLabel.Size = UDim2.new(1, -140, 1, 0)
+            nameLabel.Position = UDim2.new(0, 15, 0, 0)
+            nameLabel.BackgroundTransparency = 1
+            nameLabel.Text = data.name:upper()
+            nameLabel.TextColor3 = isCurrent and Color3.new(1, 1, 1) or Color3.fromRGB(130, 130, 140)
+            nameLabel.Font = Enum.Font.Code
+            nameLabel.TextSize = 14
+            nameLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-            local btn = Instance.new("TextButton", item)
-            btn.Size = UDim2.new(0, 100, 0, 30)
-            btn.Position = UDim2.new(1, -110, 0.5, -15)
-            btn.BackgroundColor3 = active and self.Theme.Accent or Color3.fromRGB(25, 25, 30)
-            btn.Text = active and "EXECUTE" or "LOCKED"
-            btn.TextColor3 = active and Color3.new(0,0,0) or Color3.fromRGB(80, 80, 80)
-            btn.Font = Enum.Font.Code
-            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+            local execBtn = Instance.new("TextButton", item)
+            execBtn.Size = UDim2.new(0, 110, 0, 34)
+            execBtn.Position = UDim2.new(1, -125, 0.5, -17)
+            execBtn.BackgroundColor3 = isCurrent and self.Theme.Accent or Color3.fromRGB(30, 30, 35)
+            execBtn.Text = isCurrent and "LAUNCH" or "LOCKED"
+            execBtn.TextColor3 = isCurrent and Color3.new(0, 0, 0) or Color3.fromRGB(90, 90, 90)
+            execBtn.Font = Enum.Font.Code
+            execBtn.TextSize = 12
+            Instance.new("UICorner", execBtn).CornerRadius = UDim.new(0, 4)
 
-            btn.MouseButton1Click:Connect(function()
-                if active then
+            execBtn.MouseButton1Click:Connect(function()
+                if isCurrent then
                     if data.onExecute then data.onExecute() end
                     if data.url then loadstring(game:HttpGet(data.url))() end
                 else
-                    self:Notify("ERROR", "Invalid Environment ID", 3)
+                    self:Notify("SECURITY", "Incompatible Simulation Environment", 3)
                 end
             end)
         end
 
-        local isMin = false
-        min.MouseButton1Click:Connect(function()
-            isMin = not isMin
-            self:Tween(m, 0.5, {Size = isMin and UDim2.new(0, 580, 0, 35) or UDim2.new(0, 580, 0, 380)})
-            sc.Visible = not isMin
+        local minimized = false
+        minBtn.MouseButton1Click:Connect(function()
+            minimized = not minimized
+            local targetSize = minimized and UDim2.new(0, 600, 0, 45) or UDim2.new(0, 600, 0, 400)
+            self:Tween(frame, 0.5, {Size = targetSize})
+            scroll.Visible = not minimized
         end)
 
-        close.MouseButton1Click:Connect(function()
-            self:Tween(m, 0.5, {GroupTransparency = 1}):Completed:Wait()
-            g:Destroy()
+        closeBtn.MouseButton1Click:Connect(function()
+            local hide = self:Tween(frame, 0.5, {GroupTransparency = 1})
+            hide.Completed:Wait()
+            mainGui:Destroy()
         end)
 
-        
-        local drag, start, pos
-        tb.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = true start = i.Position pos = m.Position end end)
-        UserInputService.InputChanged:Connect(function(i) if drag and i.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = i.Position - start
-            m.Position = UDim2.new(pos.X.Scale, pos.X.Offset + delta.X, pos.Y.Scale, pos.Y.Offset + delta.Y)
-        end end)
-        UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = false end end)
+        -- Draggable Logic
+        local drag, startPos, dragStart
+        topBar.InputBegan:Connect(function(i)
+            if i.UserInputType == Enum.UserInputType.MouseButton1 then
+                drag = true
+                dragStart = i.Position
+                startPos = frame.Position
+            end
+        end)
+        UserInputService.InputChanged:Connect(function(i)
+            if drag and i.UserInputType == Enum.UserInputType.MouseMovement then
+                local delta = i.Position - dragStart
+                frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+        end)
+        UserInputService.InputEnded:Connect(function(i)
+            if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = false end
+        end)
 
-        self:Tween(m, 0.6, {GroupTransparency = 0})
+        self:Tween(frame, 0.8, {GroupTransparency = 0})
     end)
 end
 
