@@ -7,7 +7,7 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local function getExecutor()
     if identifyexecutor then return identifyexecutor().Name end
     if getexecutorname then return getexecutorname() end
-    return "Unknown"
+    return "Unknown Executor"
 end
 
 local AP6 = {
@@ -27,7 +27,7 @@ end
 
 function AP6:BootSequence(callback)
     local gui = Instance.new("ScreenGui", AP6.PlayerGui)
-    gui.Name = "NEURONET_BOOT"
+    gui.Name = "AP6_BOOT"
     gui.IgnoreGuiInset = true
 
     local bg = Instance.new("Frame", gui)
@@ -35,52 +35,49 @@ function AP6:BootSequence(callback)
     bg.BackgroundColor3 = AP6.Dark
 
     local logo = Instance.new("TextLabel", bg)
-    logo.Size = UDim2.new(0,800,0,120)
-    logo.Position = UDim2.new(0.5,-400,0.28,0)
+    logo.Size = UDim2.new(0,900,0,130)
+    logo.Position = UDim2.new(0.5,-450,0.25,0)
     logo.BackgroundTransparency = 1
-    logo.Text = "AP6 NEURONET"
+    logo.Text = "AP6 HUB"
     logo.TextColor3 = AP6.Cyan
     logo.Font = Enum.Font.Code
-    logo.TextSize = 80
-    logo.TextStrokeTransparency = 0.4
-    logo.TextStrokeColor3 = Color3.new(0,0,0)
+    logo.TextSize = 92
+    logo.TextStrokeTransparency = 0.3
 
     local sub = Instance.new("TextLabel", bg)
-    sub.Size = UDim2.new(0,800,0,50)
-    sub.Position = UDim2.new(0.5,-400,0.42,0)
+    sub.Size = UDim2.new(0,900,0,50)
+    sub.Position = UDim2.new(0.5,-450,0.4,0)
     sub.BackgroundTransparency = 1
-    sub.Text = "TERMINATOR v3.2 — SHADOW PROTOCOL"
+    sub.Text = "TERMINATOR v3.2 — UNIVERSAL INJECTOR"
     sub.TextColor3 = AP6.NeonGreen
     sub.Font = Enum.Font.Code
-    sub.TextSize = 32
+    sub.TextSize = 34
 
     local progBg = Instance.new("Frame", bg)
-    progBg.Size = UDim2.new(0,600,0,12)
-    progBg.Position = UDim2.new(0.5,-300,0.55,0)
+    progBg.Size = UDim2.new(0,700,0,14)
+    progBg.Position = UDim2.new(0.5,-350,0.55,0)
     progBg.BackgroundColor3 = Color3.fromRGB(20,20,25)
-    Instance.new("UICorner", progBg).CornerRadius = UDim.new(0,6)
+    Instance.new("UICorner", progBg).CornerRadius = UDim.new(0,999)
 
     local prog = Instance.new("Frame", progBg)
     prog.Size = UDim2.new(0,0,1,0)
     prog.BackgroundColor3 = AP6.Cyan
-    Instance.new("UICorner", prog).CornerRadius = UDim.new(0,6)
-    Instance.new("UIGradient", prog).Color = ColorSequence.new{ColorSequenceKeypoint.new(0, AP6.Cyan), ColorSequenceKeypoint.new(1, AP6.NeonGreen)}
+    Instance.new("UICorner", prog).CornerRadius = UDim.new(0,999)
 
     local console = Instance.new("TextLabel", bg)
-    console.Size = UDim2.new(0.7,0,0.3,0)
-    console.Position = UDim2.new(0.15,0,0.65,0)
+    console.Size = UDim2.new(0.75,0,0.32,0)
+    console.Position = UDim2.new(0.125,0,0.65,0)
     console.BackgroundTransparency = 1
     console.TextColor3 = AP6.NeonGreen
     console.Font = Enum.Font.Code
-    console.TextSize = 20
+    console.TextSize = 21
     console.TextXAlignment = Enum.TextXAlignment.Left
-    console.TextYAlignment = Enum.TextYAlignment.Top
 
-    TweenService:Create(prog, TweenInfo.new(4, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,1,0)}):Play()
+    TweenService:Create(prog, TweenInfo.new(3.8, Enum.EasingStyle.Quart), {Size = UDim2.new(1,0,1,0)}):Play()
 
     local lines = {
-        "[EXEC] Detected: " .. getExecutor(),
-        "[NEURONET] Initializing core systems...",
+        "[EXECUTOR] " .. getExecutor(),
+        "[CORE] Initializing AP6 HUB...",
         "[SHADOW] Establishing encrypted tunnel...",
         "[ANTI] Bypassing detection layers...",
         "[PAYLOAD] Loading universal injector...",
@@ -91,24 +88,24 @@ function AP6:BootSequence(callback)
     local full = ""
     for _, line in ipairs(lines) do
         local toType = full .. line .. "\n"
-        task.spawn(function() AP6:TypeText(console, toType, 0.02) end)
+        AP6:TypeText(console, toType, 0.022)
         full = toType
-        task.wait(0.5)
+        task.wait(0.45)
     end
 
-    task.wait(2)
-    TweenService:Create(bg, TweenInfo.new(1, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
-    TweenService:Create(logo, TweenInfo.new(1), {TextTransparency = 1}):Play()
-    TweenService:Create(sub, TweenInfo.new(1), {TextTransparency = 1}):Play()
-    TweenService:Create(console, TweenInfo.new(1), {TextTransparency = 1}):Play()
-    task.wait(1.2)
+    task.wait(1.6)
+    TweenService:Create(bg, TweenInfo.new(1.2, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(logo, TweenInfo.new(1.2), {TextTransparency = 1}):Play()
+    TweenService:Create(sub, TweenInfo.new(1.2), {TextTransparency = 1}):Play()
+    TweenService:Create(console, TweenInfo.new(1.2), {TextTransparency = 1}):Play()
+    task.wait(1.4)
     gui:Destroy()
     callback()
 end
 
 function AP6:Notify(title, text, duration)
-    local gui = AP6.PlayerGui:FindFirstChild("NEURONET_NOTIFY") or Instance.new("ScreenGui", AP6.PlayerGui)
-    gui.Name = "NEURONET_NOTIFY"
+    local gui = AP6.PlayerGui:FindFirstChild("AP6_NOTIFY") or Instance.new("ScreenGui", AP6.PlayerGui)
+    gui.Name = "AP6_NOTIFY"
     gui.IgnoreGuiInset = true
 
     local holder = gui:FindFirstChild("Holder") or Instance.new("Frame", gui)
@@ -167,7 +164,7 @@ end
 
 function AP6:CreateMainUI(games)
     local gui = Instance.new("ScreenGui", AP6.PlayerGui)
-    gui.Name = "NEURONET_UI"
+    gui.Name = "AP6_HUB"
     gui.IgnoreGuiInset = true
     gui.ResetOnSpawn = false
 
@@ -189,7 +186,7 @@ function AP6:CreateMainUI(games)
     title.Size = UDim2.new(1,-20,1,0)
     title.Position = UDim2.new(0,25,0,0)
     title.BackgroundTransparency = 1
-    title.Text = "AP6 UNIVERSAL  •  TERMINATOR v3.2"
+    title.Text = "AP6 HUB  •  TERMINATOR v3.2"
     title.TextColor3 = AP6.Cyan
     title.Font = Enum.Font.Code
     title.TextSize = 28
@@ -298,7 +295,7 @@ function AP6:CreateMainUI(games)
         end
     end)
 
-    AP6:Notify("StudiosHUB", "Welcome back, Ap6ykx3", 3)
+    AP6:Notify("AP6 HUB", "Welcome back, Ap6ykx3", 3)
 end
 
 function AP6:Init(games)
